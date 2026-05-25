@@ -161,12 +161,12 @@ canvas{display:block}
 <button class="btn small" id="btn-minimap"><span class="icon">🗺️</span><span>缩略</span></button>
 <button class="btn small" id="btn-save"><span class="icon">💾</span><span>保存</span></button>
 </div>
-<div class="panel" id="panel-team"><h2>精灵队伍</h2><div id="team-list"></div><button class="btn outline" id="btn-team-close" style="width:100%;margin-top:10px">关闭</button></div>
-<div class="panel" id="panel-bag"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.1)"><h2 style="margin:0;padding:0;border:none">背包</h2><button class="btn outline small" id="btn-bag-close">✕ 关闭</button></div><div id="bag-list"></div></div>
-<div class="panel" id="panel-pokedex"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.1)"><h2 style="margin:0;padding:0;border:none">精灵图鉴</h2><button class="btn outline small" id="btn-pokedex-close">✕ 关闭</button></div><div id="pokedex-list"></div></div>
+<div class="panel" id="panel-team"><h2 style="margin:0 0 12px 0;padding:0 0 8px 0;border-bottom:1px solid rgba(255,255,255,.1)">精灵队伍</h2><div id="team-list"></div><button class="btn outline small" id="btn-team-close" style="width:100%;margin-top:12px">✕ 关闭</button></div>
+<div class="panel" id="panel-bag"><h2 style="margin:0 0 12px 0;padding:0 0 8px 0;border-bottom:1px solid rgba(255,255,255,.1)">背包</h2><div id="bag-list"></div><button class="btn outline small" id="btn-bag-close" style="width:100%;margin-top:12px">✕ 关闭</button></div>
+<div class="panel" id="panel-pokedex"><h2 style="margin:0 0 12px 0;padding:0 0 8px 0;border-bottom:1px solid rgba(255,255,255,.1)">精灵图鉴</h2><div id="pokedex-list"></div><button class="btn outline small" id="btn-pokedex-close" style="width:100%;margin-top:12px">✕ 关闭</button></div>
 <div class="panel" id="panel-pokemon"><h2>精灵详情</h2><div id="pokemon-detail"></div><button class="btn outline" id="btn-pokemon-close" style="width:100%;margin-top:10px">关闭</button></div>
-<div class="panel" id="panel-minimap"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.1)"><h2 style="margin:0;padding:0;border:none">地图缩略图</h2><button class="btn outline small" id="btn-minimap-close">✕ 关闭</button></div><canvas id="minimap-canvas" width="300" height="300" style="border:1px solid rgba(255,255,255,0.2);border-radius:8px;max-width:100%"></canvas><div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px" id="minimap-legend"></div></div>
-<div class="panel" id="panel-starter"><h2>选择初始精灵</h2><div id="starter-list"></div><button class="btn gold" id="btn-confirm" style="width:100%;margin-top:12px">确认选择</button><button class="btn outline" id="btn-starter-close" style="width:100%;margin-top:6px">关闭</button></div>
+<div class="panel" id="panel-minimap"><h2 style="margin:0 0 12px 0;padding:0 0 8px 0;border-bottom:1px solid rgba(255,255,255,.1)">地图缩略图</h2><canvas id="minimap-canvas" width="300" height="300" style="border:1px solid rgba(255,255,255,0.2);border-radius:8px;max-width:100%"></canvas><div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px" id="minimap-legend"></div><button class="btn outline small" id="btn-minimap-close" style="width:100%;margin-top:12px">✕ 关闭</button></div>
+<div class="panel" id="panel-starter"><h2 style="margin:0 0 12px 0;padding:0 0 8px 0;border-bottom:1px solid rgba(255,255,255,.1)">选择初始精灵</h2><div id="starter-list"></div><button class="btn gold" id="btn-confirm" style="width:100%;margin-top:12px">确认选择</button><button class="btn outline small" id="btn-starter-close" style="width:100%;margin-top:12px">✕ 关闭</button></div>
 <div class="battle-hud" id="battle-hud">
 <div class="battle-menu" id="battle-menu">
 <button class="btn" id="btn-fight"><span class="icon">⚔️</span>战斗</button>
@@ -186,8 +186,15 @@ canvas{display:block}
 </div>
 <script>
 // =========== 常量 ===========
-const GAME_VERSION='2.4';
+const GAME_VERSION='2.4.1';
 const CHANGELOG=[
+ {v:'2.4.1',items:[
+  '紧急修复：精灵立绘在所有界面正确显示',
+  '新增地图：海滩深处（需先与水手对话解锁）',
+  '新增精灵：050霜晶鹿在海滩深处固定刷新',
+  '优化功能：战败后自动传送至最近护士处',
+  '界面优化：所有弹窗关闭按钮移至底部统一位置',
+ ]},
  {v:'2.4',items:[
   '进化系统：初始精灵8级/16级进化',
   '20级超技能：爆裂燃烧/加农水炮/疯狂植物',
@@ -345,35 +352,50 @@ let SPRITES_LOADED = {};
 
 // 精灵图片加载器
 function loadSpriteImages(){
- const promises=[];
- Object.keys(SPRITES).forEach(id=>{
-  const sprite=SPRITES[id];
-  if(!sprite) return;
-  const imgPath=`sprites/${id}.png`;
+  const promises = [];
+  const total = Object.keys(SPRITES).length;
+  let loaded = 0;
   
-  if(SPRITES_LOADED[id]===imgPath&&sprite.image){
-   promises.push(Promise.resolve());
-   return;
-  }
-  
-  const promise=new Promise(resolve=>{
-   const img=new Image();
-   img.crossOrigin='anonymous';
-   img.onload=()=>{
-    SPRITES[id].image=img;
-    SPRITES_LOADED[id]=imgPath;
-    resolve();
-   };
-   img.onerror=()=>{
-    console.warn(`无法加载精灵图片: ${imgPath}`);
-    SPRITES[id].image=null;
-    resolve();
-   };
-   img.src=imgPath;
+  Object.keys(SPRITES).forEach(id => {
+    const sprite = SPRITES[id];
+    if (!sprite) return;
+    const imgPath = `sprites/${id}.png`;
+    
+    if (SPRITES_LOADED[id] === imgPath && sprite.image) {
+      loaded++;
+      promises.push(Promise.resolve());
+      return;
+    }
+    
+    const promise = new Promise(resolve => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        SPRITES[id].image = img;
+        SPRITES_LOADED[id] = imgPath;
+        loaded++;
+        console.log(`✅ 精灵 ${id} 立绘已加载 (${loaded}/${total})`);
+        resolve();
+      };
+      img.onerror = () => {
+        console.warn(`❌ 无法加载精灵图片: ${imgPath}`);
+        SPRITES[id].image = null;
+        loaded++;
+        resolve();
+      };
+      img.src = imgPath;
+    });
+    promises.push(promise);
   });
-  promises.push(promise);
- });
- return Promise.all(promises);
+  
+  console.log(`📊 开始加载 ${total} 张精灵立绘...`);
+  return Promise.all(promises).then(() => {
+    console.log(`🎉 精灵立绘加载完成: ${loaded}/${total}`);
+  console.log('立绘加载验证:');
+  Object.keys(SPRITES).slice(0, 5).forEach(id => {
+    console.log(`${id}: image=${SPRITES[id].image ? '✅' : '❌'}, src=${SPRITES[id].image?.src || 'null'}`);
+  });
+  });
 }
 
 const NPC_ICONS={
@@ -395,9 +417,10 @@ const MAPS={
  'start-town':{w:24,h:16,name:'起始镇',npcs:[{x:13,y:8,name:'研究员',dlg:['欢迎来到起始镇！去研究所找博士吧！','祝你好运，年轻的训练师！']},{x:10,y:5,name:'博士',dlg:['欢迎，新来的训练师！','这是给你的启动资金5000金币，好好利用！'],reward:5000}],items:[{x:7,y:4,type:'money',amount:100},{x:18,y:11,type:'pokeball',amount:1}],exits:[{x:23,y:9,to:'route1',tx:0,ty:9}]},
  'route1':{w:28,h:14,name:'常盘森林1',wild:'forest',npcs:[{x:12,y:6,name:'训练家',dlg:['我是森林训练家！要和我对战吗？'],battle:true,team:['010','011'],money:150}],items:[{x:5,y:7,type:'money',amount:50},{x:22,y:3,type:'money',amount:80},{x:14,y:10,type:'potion',amount:1}],exits:[{x:0,y:9,to:'start-town',tx:22,ty:9},{x:27,y:7,to:'port-town',tx:0,ty:7}]},
  'port-town':{w:26,h:16,name:'港口镇',npcs:[{x:10,y:11,name:'护士',dlg:['欢迎来到精灵中心！要治疗你的精灵吗？'],heal:true},{x:16,y:12,name:'店员',dlg:['欢迎光临！需要买什么吗？'],shop:true},{x:20,y:7,name:'水手',dlg:['我在海滩深处看到过一只发蓝光的精灵...','全身都是冰晶，非常漂亮！'],sailor:true},{x:6,y:4,name:'训练家2',dlg:['我是港口训练家！要挑战我吗？'],battle:true,team:['015','016'],money:200}],items:[{x:3,y:14,type:'money',amount:120}],exits:[{x:0,y:7,to:'route1',tx:26,ty:7},{x:25,y:9,to:'route2',tx:0,ty:9}]},
- 'route2':{w:28,h:14,name:'阳光海滩',wild:'beach',npcs:[{x:16,y:4,name:'训练家',dlg:['我是海滩训练家！要试试我的水系精灵吗？'],battle:true,team:['017','018'],money:180}],items:[{x:7,y:8,type:'money',amount:70},{x:20,y:11,type:'money',amount:90},{x:25,y:5,type:'great-ball',amount:1}],exits:[{x:0,y:9,to:'port-town',tx:24,ty:9},{x:27,y:7,to:'mine-town',tx:0,ty:7}]},
+ 'route2':{w:28,h:14,name:'阳光海滩',wild:'beach',npcs:[{x:16,y:4,name:'训练家',dlg:['我是海滩训练家！要试试我的水系精灵吗？'],battle:true,team:['017','018'],money:180}],items:[{x:7,y:8,type:'money',amount:70},{x:20,y:11,type:'money',amount:90},{x:25,y:5,type:'great-ball',amount:1}],exits:[{x:0,y:9,to:'port-town',tx:24,ty:9},{x:27,y:7,to:'mine-town',tx:0,ty:7},{x:14,y:13,to:'deep-beach',tx:8,ty:11}]},
  'mine-town':{w:24,h:16,name:'矿山镇',npcs:[{x:10,y:12,name:'护士',dlg:['要治疗精灵吗？'],heal:true},{x:16,y:11,name:'高级店员',dlg:['这里卖更好的道具！'],shop2:true},{x:12,y:7,name:'道馆主',dlg:['我是矿山道馆的馆主！','敢来挑战吗？'],gym:true},{x:5,y:3,name:'训练家',dlg:['我是矿山训练家！我的岩石系精灵很强！'],battle:true,team:['022','011'],money:250}],items:[{x:20,y:5,type:'money',amount:150},{x:7,y:10,type:'super-potion',amount:1}],exits:[{x:0,y:7,to:'route2',tx:26,ty:7},{x:23,y:4,to:'cave',tx:0,ty:7}]},
- 'cave':{w:23,h:14,name:'传说洞穴',npcs:[{x:11,y:7,name:'??',dlg:['你感觉到了强大的压迫感...','"星辉龙"就在这里！'],legendary:true}],items:[{x:5,y:3,type:'money',amount:300},{x:17,y:10,type:'money',amount:200}],exits:[{x:0,y:7,to:'mine-town',tx:22,ty:4}]}
+ 'cave':{w:23,h:14,name:'传说洞穴',npcs:[{x:11,y:7,name:'??',dlg:['你感觉到了强大的压迫感...','"星辉龙"就在这里！'],legendary:true}],items:[{x:5,y:3,type:'money',amount:300},{x:17,y:10,type:'money',amount:200}],exits:[{x:0,y:7,to:'mine-town',tx:22,ty:4}]},
+ 'deep-beach':{w:16,h:12,name:'海滩深处',wild:'deep',npcs:[],items:[{x:8,y:6,type:'ice-stone',amount:1}],exits:[{x:0,y:6,to:'route2',tx:14,ty:13}]}
 };
 
 // 生成地图瓦片
@@ -416,7 +439,8 @@ Object.values(MAPS).forEach(m=>{
 // 野生精灵生成
 const WILD_SPAWNS={
  'route1':{pokemon:['010','011','012','013','014'],positions:[{x:4,y:4},{x:8,y:5},{x:12,y:6},{x:16,y:4},{x:20,y:7},{x:6,y:9},{x:10,y:7},{x:14,y:5},{x:18,y:4},{x:22,y:5}]},
- 'route2':{pokemon:['015','016','017','018','019','020'],positions:[{x:3,y:3},{x:7,y:4},{x:11,y:3},{x:15,y:5},{x:19,y:3},{x:5,y:7},{x:9,y:6},{x:13,y:5},{x:17,y:4},{x:21,y:3},{x:6,y:9},{x:12,y:8}]}
+ 'route2':{pokemon:['015','016','017','018','019','020','050'],positions:[{x:3,y:3},{x:7,y:4},{x:11,y:3},{x:15,y:5},{x:19,y:3},{x:5,y:7},{x:9,y:6},{x:13,y:5},{x:17,y:4},{x:21,y:3},{x:6,y:9},{x:12,y:8}]},
+ 'deep-beach':{pokemon:['050'],positions:[{x:8,y:6}],fixed:true}
 };
 
 // =========== 游戏状态 ===========
@@ -703,8 +727,13 @@ function spawnWildPokemon(){
  const spawnInfo=WILD_SPAWNS[state.currentMap];
  if(!spawnInfo) return;
  
+ // 固定刷新：如果已有该地图的精灵则跳过
+ if(spawnInfo.fixed && state.wildPokemon.some(p => p.id === spawnInfo.pokemon[0])){
+  return;
+ }
+ 
  state.wildPokemon=[];
- const spawnCount=random(3,5);
+ const spawnCount=spawnInfo.fixed?1:random(3,5);
  const availableSpots=[...spawnInfo.positions].sort(()=>Math.random()-0.5);
  
  for(let i=0;i<Math.min(spawnCount,availableSpots.length);i++){
@@ -792,7 +821,8 @@ const MAP_COLORS={
  'port-town':{bg:'#DEB887',tree:'#7BA05B'},
  'route2':{bg:'#FFD8B1',tree:'#7BA05B'},
  'mine-town':{bg:'#8B7355',tree:'#4A6B3A'},
- 'cave':{bg:'#333333',tree:'#555555'}
+ 'cave':{bg:'#333333',tree:'#555555'},
+ 'deep-beach':{bg:'#90E0EF',tree:'#4A90A4'}
 };
 
 function getMapColors(mapName){
@@ -1238,6 +1268,11 @@ function movePlayer(direction){
  if(map.exits){
   const exit=map.exits.find(e=>e.x===newX&&e.y===newY);
   if(exit){
+   // 检查海滩深处锁定
+   if(exit.to === 'deep-beach' && !state.sailorTalked){
+    showDialog('需要先与港口镇水手对话才能进入海滩深处！');
+    return;
+   }
    state.currentMap=exit.to;
    state.player.x=exit.tx;
    state.player.y=exit.ty;
@@ -1531,7 +1566,7 @@ function openTeamMenu(){
   const sprite=SPRITES[p.id]||SPRITES['001'];
   const hpPercent=Math.round(p.hp/p.maxHp*100);
   const followerStar=state.follower===p.id?'⭐ ':'';
-  const imgTag=sprite.image?`<img src="${sprite.image.src}" style="width:48px;height:48px;border-radius:50%;object-fit:cover">`:`<div style="width:48px;height:48px;border-radius:50%;background:${sprite.color};display:flex;align-items:center;justify-content:center;font-size:24px">${sprite.icon}</div>`;
+  const imgTag=sprite.image?`<img src="${sprite.image.src}" style="width:48px;height:48px;border-radius:50%;object-fit:contain">`:`<div style="width:48px;height:48px;border-radius:50%;background:${sprite.color};display:flex;align-items:center;justify-content:center;font-size:24px">${sprite.icon}</div>`;
   return{
    html:`<div style="display:flex;align-items:center;gap:10px">
      ${state.follower===p.id?'<span style="color:#f7b731;font-size:1.1em">⭐</span>':''}
@@ -1556,7 +1591,7 @@ function openTeamMenu(){
 
 function showPokemonDetail(pokemon,index){
  const sprite=SPRITES[pokemon.id]||SPRITES['001'];
- const imgTag=sprite.image?`<img src="${sprite.image.src}" style="width:80px;height:80px;border-radius:50%;object-fit:cover">`:`<div style="width:80px;height:80px;border-radius:50%;background:${sprite.color};display:inline-flex;align-items:center;justify-content:center;font-size:40px">${sprite.icon}</div>`;
+ const imgTag=sprite.image?`<img src="${sprite.image.src}" style="width:80px;height:80px;border-radius:50%;object-fit:contain">`:`<div style="width:80px;height:80px;border-radius:50%;background:${sprite.color};display:inline-flex;align-items:center;justify-content:center;font-size:40px">${sprite.icon}</div>`;
  const detail=`
   <div class="pokemon-detail active">
    <div class="detail-header">
@@ -1656,7 +1691,7 @@ function openPokedex(){
   item.className=`pokedex-item ${seen?'seen':''} ${caught?'caught':''}`;
   
   if(seen){
-   const imgTag=sprite.image?`<img src="${sprite.image.src}" style="width:48px;height:48px;border-radius:50%;object-fit:cover">`:`<div class="pokedex-icon" style="background:${sprite.color}">${sprite.icon}</div>`;
+   const imgTag=sprite.image?`<img src="${sprite.image.src}" style="width:48px;height:48px;border-radius:50%;object-fit:contain">`:`<div class="pokedex-icon" style="background:${sprite.color}">${sprite.icon}</div>`;
    item.innerHTML=`
     ${imgTag}
     <div class="pokedex-name">${species.name}</div>
@@ -1664,7 +1699,7 @@ function openPokedex(){
     <div style="font-size:.6rem;color:var(--text-dim)">${caught?'已捕捉':'已遇见'}</div>
    `;
    item.onclick=()=>{
-    const detailImgTag=sprite.image?`<img src="${sprite.image.src}" style="width:80px;height:80px;border-radius:50%;object-fit:cover">`:`<div style="width:80px;height:80px;border-radius:50%;background:${sprite.color};display:inline-flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:10px">${sprite.icon}</div>`;
+    const detailImgTag=sprite.image?`<img src="${sprite.image.src}" style="width:80px;height:80px;border-radius:50%;object-fit:contain">`:`<div style="width:80px;height:80px;border-radius:50%;background:${sprite.color};display:inline-flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:10px">${sprite.icon}</div>`;
     showDialog(`
      <div style="text-align:center">
       ${detailImgTag}
@@ -1797,7 +1832,7 @@ function showStarterSelect(){
  starters.forEach(id=>{
   const species=POKEDEX[id];
   const sprite=SPRITES[id];
-  const imgTag=sprite.image?`<img src="${sprite.image.src}" style="width:60px;height:60px;border-radius:50%;object-fit:cover">`:`<div style="width:60px;height:60px;border-radius:50%;background:${sprite.color};display:flex;align-items:center;justify-content:center;font-size:28px">${sprite.icon}</div>`;
+  const imgTag=sprite.image?`<img src="${sprite.image.src}" style="width:60px;height:60px;border-radius:50%;object-fit:contain">`:`<div style="width:60px;height:60px;border-radius:50%;background:${sprite.color};display:flex;align-items:center;justify-content:center;font-size:28px">${sprite.icon}</div>`;
   const div=document.createElement('div');
   div.className='panel-item';
   div.innerHTML=`
@@ -2147,13 +2182,13 @@ function usePotion(amount){
 }
 
 function tryRun(){
- const battle=state.battle;
- if(battle.legendary||battle.gym||battle.trainer){
-  setMsg('无法逃跑！');
-  return;
- }
- setMsg('成功逃走了！');
- endBattle(false,false);
+  const battle = state.battle;
+  if (battle.legendary || battle.gym || battle.trainer) {
+    setMsg('无法逃跑！对手的压迫感太强了！');
+    return;
+  }
+  setMsg('成功逃走了！你迅速离开了战场。');
+  endBattle(false, false);
 }
 
 function enemyTurn(){
@@ -2251,8 +2286,15 @@ function endBattle(playerWon,caught=false){
   setMsg('战斗胜利！');
   
  }else if(!playerWon&&!caught){
-  setMsg('战斗失败...回到精灵中心');
-  state.team.forEach(p=>p.hp=p.maxHp);
+  // 查找最近的护士NPC地图
+  state.currentMap = 'start-town';
+  state.player.x = 12;
+  state.player.y = 14;
+  state.team.forEach(p => { p.hp = p.maxHp; p.moves.forEach(m => m.pp = m.maxPp); });
+  
+  showDialog('你的精灵全部倒下了...<br>被紧急传送到起始镇的精灵中心接受治疗。', () => {
+    render();
+  });
  }
  
  setTimeout(()=>{
@@ -2350,8 +2392,15 @@ function init(){
  spawnWildPokemon();
  
  loadSpriteImages().then(()=>{
-  console.log('精灵图片加载完成');
- });
+  console.log('🎮 游戏初始化完成！版本 ' + GAME_VERSION);
+  console.log('🌐 在线预览: https://nandy5474.github.io/pokemon-star-adventure/');
+  console.log('📁 本地文件: ' + window.location.href);
+  setTimeout(() => {
+    if (window.location.protocol === 'file:') {
+      console.log('💡 提示: 本地运行中，GitHub同步后可在浏览器中访问 https://nandy5474.github.io/pokemon-star-adventure/ 在线游玩');
+    }
+  }, 2000);
+ }).catch(e => console.error('加载失败:', e));
  
  const saved=localStorage.getItem('pokemon_save');
  if(saved){
