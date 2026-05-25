@@ -110,14 +110,13 @@ canvas{display:block}
 .overlay-dim{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:25;display:none}
 .overlay-dim.active{display:block}
 /* 虚拟十字键 */
-.virtual-dpad{position:absolute;bottom:80px;left:20px;z-index:15;display:none}
-.virtual-dpad .dpad-row{display:flex;justify-content:center;margin-bottom:4px}
-.virtual-dpad .dpad-btn{width:50px;height:50px;background:rgba(67,97,238,0.8);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;cursor:pointer;user-select:none;touch-action:none;border:2px solid rgba(255,255,255,0.3);transition:all .1s}
-.virtual-dpad .dpad-btn:active{transform:scale(0.9);background:rgba(67,97,238,0.9)}
-.virtual-dpad #dpad-center{width:50px;height:50px;background:rgba(247,37,133,0.8);border-radius:50%}
+.virtual-dpad{position:fixed;bottom:80px;left:20px;z-index:20;display:none}
+.virtual-dpad .dpad-row{display:flex;justify-content:center;gap:4px}
+.virtual-dpad .dpad-btn{width:50px;height:50px;background:rgba(67,97,238,0.75);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;cursor:pointer;user-select:none;touch-action:none;border:2px solid rgba(255,255,255,0.3);transition:all .1s}
+.virtual-dpad .dpad-btn:active{transform:scale(0.9);background:rgba(67,97,238,0.95)}
 /* 虚拟确定/取消按钮 */
-.virtual-action{position:absolute;bottom:80px;right:20px;z-index:15;display:none;flex-direction:column;gap:8px}
-.virtual-action .action-btn{width:80px;height:50px;background:rgba(46,204,113,0.8);border-radius:12px;border:none;color:#fff;font-size:16px;font-weight:600;cursor:pointer;border:2px solid rgba(255,255,255,0.3);transition:all .1s}
+.virtual-action{position:fixed;bottom:80px;left:calc(50% - 90px);z-index:20;display:none;gap:8px}
+.virtual-action .action-btn{width:80px;height:50px;background:rgba(46,204,113,0.8);border-radius:12px;border:2px solid rgba(255,255,255,0.3);color:#fff;font-size:16px;font-weight:600;cursor:pointer;transition:all .1s}
 .virtual-action .action-btn.cancel{background:rgba(231,76,60,0.8)}
 .virtual-action .action-btn:active{transform:scale(0.9)}
 /* 移动端显示虚拟按键 */
@@ -133,12 +132,6 @@ canvas{display:block}
 <body>
 <div class="overlay-dim" id="overlay-dim"></div>
 <div id="panel-changelog" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:12px;padding:20px;width:min(450px,95vw);max-height:80vh;border:1px solid rgba(255,255,255,.1);box-shadow:0 20px 60px rgba(0,0,0,.5);display:none;overflow-y:auto;z-index:30"><h2 style="text-align:center">星辉传说</h2><div style="text-align:center;font-size:1.5rem;font-weight:700;margin-bottom:8px">v2.1</div><div id="changelog-content" style="font-size:.85rem;line-height:1.6;max-height:50vh;overflow-y:auto"></div><button class="btn gold" id="btn-changelog-close" style="width:100%;margin-top:12px">开始冒险</button></div>
-<div id="game">
-<canvas id="canvas"></canvas>
-<div class="overlay" id="overlay">
-<div class="map-name" id="map-name"></div>
-<div class="interact-hint" id="interact-hint"><div class="hint-title" id="hint-title"></div><div id="hint-text"></div></div>
-<div class="npc-portrait" id="npc-portrait"></div>
 <!-- 虚拟十字键 -->
 <div class="virtual-dpad" id="virtual-dpad">
 <div class="dpad-row">
@@ -146,7 +139,6 @@ canvas{display:block}
 </div>
 <div class="dpad-row">
 <div class="dpad-btn" id="dpad-left">←</div>
-<div class="dpad-btn" id="dpad-center">○</div>
 <div class="dpad-btn" id="dpad-right">→</div>
 </div>
 <div class="dpad-row">
@@ -155,9 +147,15 @@ canvas{display:block}
 </div>
 <!-- 虚拟确定/取消按钮 -->
 <div class="virtual-action" id="virtual-action">
-<button class="dpad-btn action-btn" id="btn-confirm-v">确定</button>
-<button class="dpad-btn action-btn cancel" id="btn-cancel-v">取消</button>
+<button class="action-btn" id="btn-confirm-v">确定</button>
+<button class="action-btn cancel" id="btn-cancel-v">取消</button>
 </div>
+<div id="game">
+<canvas id="canvas"></canvas>
+<div class="overlay" id="overlay">
+<div class="map-name" id="map-name"></div>
+<div class="interact-hint" id="interact-hint"><div class="hint-title" id="hint-title"></div><div id="hint-text"></div></div>
+<div class="npc-portrait" id="npc-portrait"></div>
 <div class="quick-bar" id="quick-bar">
 <button class="btn small outline" id="btn-collapse"><span class="icon">◀</span><span>收起</span></button>
 <button class="btn small" id="btn-team"><span class="icon">👥</span><span>队伍</span></button>
@@ -1084,13 +1082,18 @@ function setupVirtualDpad(){
  const btnConfirm=document.getElementById('btn-confirm-v');
  const btnCancel=document.getElementById('btn-cancel-v');
 
- if(btnUp) btnUp.addEventListener('touchstart',e=>{e.preventDefault();movePlayer('up');});
- if(btnDown) btnDown.addEventListener('touchstart',e=>{e.preventDefault();movePlayer('down');});
- if(btnLeft) btnLeft.addEventListener('touchstart',e=>{e.preventDefault();movePlayer('left');});
- if(btnRight) btnRight.addEventListener('touchstart',e=>{e.preventDefault();movePlayer('right');});
- if(btnConfirm) btnConfirm.addEventListener('touchstart',e=>{e.preventDefault();interact();});
- if(btnCancel) btnCancel.addEventListener('touchstart',e=>{
-  e.preventDefault();
+ const addButtonEvents=(btn,action)=>{
+  if(!btn) return;
+  btn.addEventListener('touchstart',e=>{e.preventDefault();action();});
+  btn.addEventListener('mousedown',e=>{e.preventDefault();action();});
+ };
+
+ addButtonEvents(btnUp,()=>movePlayer('up'));
+ addButtonEvents(btnDown,()=>movePlayer('down'));
+ addButtonEvents(btnLeft,()=>movePlayer('left'));
+ addButtonEvents(btnRight,()=>movePlayer('right'));
+ addButtonEvents(btnConfirm,()=>interact());
+ addButtonEvents(btnCancel,()=>{
   // 关闭所有面板
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
  });
