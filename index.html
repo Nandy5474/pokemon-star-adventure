@@ -36,6 +36,18 @@ canvas{display:block}
 .panel.active{display:block}
 .panel h2{font-size:1.2rem;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.1)}
 .panel h3{font-size:1rem;margin:8px 0 4px;color:var(--accent)}
+.panel-close-container {
+  position: absolute;
+  top: calc(50% + 35vh); /* 在 panel 下方 */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: none;
+  margin-top: 12px;
+}
+.panel-close-container.active {
+  display: block;
+}
 .panel-item{display:flex;align-items:center;padding:10px;border-radius:8px;cursor:pointer;transition:all .15s;gap:10px;margin-bottom:4px}
 .panel-item:hover{background:rgba(255,255,255,.05)}
 .panel-item.selected{border:2px solid var(--accent);background:rgba(247,37,133,.1)}
@@ -161,12 +173,18 @@ canvas{display:block}
 <button class="btn small" id="btn-minimap"><span class="icon">🗺️</span><span>缩略</span></button>
 <button class="btn small" id="btn-save"><span class="icon">💾</span><span>保存</span></button>
 </div>
-<div class="panel" id="panel-team"><h2 style="margin:0 0 12px 0;padding:0 0 8px 0;border-bottom:1px solid rgba(255,255,255,.1)">精灵队伍</h2><div id="team-list"></div><button class="btn outline small" id="btn-team-close" style="width:100%;margin-top:12px">✕ 关闭</button></div>
-<div class="panel" id="panel-bag"><h2 style="margin:0 0 12px 0;padding:0 0 8px 0;border-bottom:1px solid rgba(255,255,255,.1)">背包</h2><div id="bag-list"></div><button class="btn outline small" id="btn-bag-close" style="width:100%;margin-top:12px">✕ 关闭</button></div>
-<div class="panel" id="panel-pokedex"><h2 style="margin:0 0 12px 0;padding:0 0 8px 0;border-bottom:1px solid rgba(255,255,255,.1)">精灵图鉴</h2><div id="pokedex-list"></div><button class="btn outline small" id="btn-pokedex-close" style="width:100%;margin-top:12px">✕ 关闭</button></div>
-<div class="panel" id="panel-pokemon"><h2>精灵详情</h2><div id="pokemon-detail"></div><button class="btn outline" id="btn-pokemon-close" style="width:100%;margin-top:10px">关闭</button></div>
-<div class="panel" id="panel-minimap"><h2 style="margin:0 0 12px 0;padding:0 0 8px 0;border-bottom:1px solid rgba(255,255,255,.1)">地图缩略图</h2><canvas id="minimap-canvas" width="300" height="300" style="border:1px solid rgba(255,255,255,0.2);border-radius:8px;max-width:100%"></canvas><div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px" id="minimap-legend"></div><button class="btn outline small" id="btn-minimap-close" style="width:100%;margin-top:12px">✕ 关闭</button></div>
-<div class="panel" id="panel-starter"><h2 style="margin:0 0 12px 0;padding:0 0 8px 0;border-bottom:1px solid rgba(255,255,255,.1)">选择初始精灵</h2><div id="starter-list"></div><button class="btn gold" id="btn-confirm" style="width:100%;margin-top:12px">确认选择</button><button class="btn outline small" id="btn-starter-close" style="width:100%;margin-top:12px">✕ 关闭</button></div>
+<div class="panel" id="panel-team"><h2 style="margin:0 0 12px 0;padding:0 0 8px 0;border-bottom:1px solid rgba(255,255,255,.1)">精灵队伍</h2><div id="team-list"></div></div>
+<div class="panel-close-container" data-panel="panel-team"><button class="btn outline small" id="btn-team-close">✕ 关闭</button></div>
+<div class="panel" id="panel-bag"><h2 style="margin:0 0 12px 0;padding:0 0 8px 0;border-bottom:1px solid rgba(255,255,255,.1)">背包</h2><div id="bag-list"></div></div>
+<div class="panel-close-container" data-panel="panel-bag"><button class="btn outline small" id="btn-bag-close">✕ 关闭</button></div>
+<div class="panel" id="panel-pokedex"><h2 style="margin:0 0 12px 0;padding:0 0 8px 0;border-bottom:1px solid rgba(255,255,255,.1)">精灵图鉴</h2><div id="pokedex-list"></div></div>
+<div class="panel-close-container" data-panel="panel-pokedex"><button class="btn outline small" id="btn-pokedex-close">✕ 关闭</button></div>
+<div class="panel" id="panel-pokemon"><h2>精灵详情</h2><div id="pokemon-detail"></div></div>
+<div class="panel-close-container" data-panel="panel-pokemon"><button class="btn outline" id="btn-pokemon-close">关闭</button></div>
+<div class="panel" id="panel-minimap"><h2 style="margin:0 0 12px 0;padding:0 0 8px 0;border-bottom:1px solid rgba(255,255,255,.1)">地图缩略图</h2><canvas id="minimap-canvas" width="300" height="300" style="border:1px solid rgba(255,255,255,0.2);border-radius:8px;max-width:100%"></canvas><div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px" id="minimap-legend"></div></div>
+<div class="panel-close-container" data-panel="panel-minimap"><button class="btn outline small" id="btn-minimap-close">✕ 关闭</button></div>
+<div class="panel" id="panel-starter"><h2 style="margin:0 0 12px 0;padding:0 0 8px 0;border-bottom:1px solid rgba(255,255,255,.1)">选择初始精灵</h2><div id="starter-list"></div><button class="btn gold" id="btn-confirm" style="width:100%;margin-top:12px">确认选择</button></div>
+<div class="panel-close-container" data-panel="panel-starter"><button class="btn outline small" id="btn-starter-close">✕ 关闭</button></div>
 <div class="battle-hud" id="battle-hud">
 <div class="battle-menu" id="battle-menu">
 <button class="btn" id="btn-fight"><span class="icon">⚔️</span>战斗</button>
@@ -186,8 +204,13 @@ canvas{display:block}
 </div>
 <script>
 // =========== 常量 ===========
-const GAME_VERSION='2.4.1';
+const GAME_VERSION='2.4.2';
 const CHANGELOG=[
+ {v:'2.4.2',items:[
+  '界面优化：关闭按钮脱离弹窗放在下方独立显示',
+  '战斗优化：只有被精灵击败才返回护士处，逃跑只是退出战斗',
+  '属性修正：修复部分精灵属性显示问题',
+ ]},
  {v:'2.4.1',items:[
   '紧急修复：精灵立绘在所有界面正确显示',
   '新增地图：海滩深处（需先与水手对话解锁）',
@@ -1527,6 +1550,17 @@ function showChoices(text,choiceList){
  dialog.classList.add('active');
 }
 
+function showPanel(panelId) {
+  hideAllDialogs();
+  document.getElementById(panelId).classList.add('active');
+  document.querySelector(`.panel-close-container[data-panel="${panelId}"]`).classList.add('active');
+}
+
+function hidePanel(panelId) {
+  document.getElementById(panelId).classList.remove('active');
+  document.querySelector(`.panel-close-container[data-panel="${panelId}"]`)?.classList.remove('active');
+}
+
 function hideAllDialogs(){
  // 关闭所有弹窗和面板
  document.getElementById('dialog').classList.remove('active');
@@ -1535,6 +1569,11 @@ function hideAllDialogs(){
  // 关闭所有面板
  document.querySelectorAll('.panel.active').forEach(panel=>{
   panel.classList.remove('active');
+ });
+ 
+ // 关闭所有关闭按钮容器
+ document.querySelectorAll('.panel-close-container.active').forEach(container=>{
+  container.classList.remove('active');
  });
 }
 
@@ -1626,11 +1665,9 @@ function showPokemonDetail(pokemon,index){
  `;
  
  document.getElementById('pokemon-detail').innerHTML=detail;
- // 添加操作按钮
  const detailActions=document.createElement('div');
  detailActions.style.cssText='display:flex;gap:6px;margin-top:10px;flex-wrap:wrap';
  
- // 设为首位按钮
  if(index>0){
   const setFirstBtn=document.createElement('button');
   setFirstBtn.className='btn gold small';
@@ -1638,28 +1675,27 @@ function showPokemonDetail(pokemon,index){
   setFirstBtn.onclick=()=>{
    const pkm=state.team.splice(index,1)[0];
    state.team.unshift(pkm);
-   document.getElementById('panel-pokemon').classList.remove('active');
-   document.getElementById('panel-team').classList.add('active');
+   hidePanel('panel-pokemon');
+   showPanel('panel-team');
    openTeamMenu();
   };
   detailActions.appendChild(setFirstBtn);
  }
  
- // 设为跟随按钮
  const followBtn=document.createElement('button');
  followBtn.className=`btn small ${state.follower===pokemon.id?'success':'outline'}`;
  followBtn.textContent=state.follower===pokemon.id?'👣 已跟随':'👣 设为跟随';
  followBtn.onclick=()=>{
   state.follower=state.follower===pokemon.id?null:pokemon.id;
-  document.getElementById('panel-pokemon').classList.remove('active');
-  document.getElementById('panel-team').classList.add('active');
+  hidePanel('panel-pokemon');
+  showPanel('panel-team');
   openTeamMenu();
  };
  detailActions.appendChild(followBtn);
  
  document.getElementById('pokemon-detail').appendChild(detailActions);
- document.getElementById('panel-team').classList.remove('active');
- document.getElementById('panel-pokemon').classList.add('active');
+ hidePanel('panel-team');
+ showPanel('panel-pokemon');
 }
 
 function openBagMenu(){
@@ -1724,7 +1760,7 @@ function openPokedex(){
   pokedexList.appendChild(item);
  });
  
- document.getElementById('panel-pokedex').classList.add('active');
+ showPanel('panel-pokedex');
 }
 
 // =========== 地图缩略图 ===========
@@ -1801,7 +1837,7 @@ function renderMinimap(){
   <span style="display:inline-flex;align-items:center;gap:3px;font-size:.75rem"><span style="width:10px;height:10px;border-radius:50%;background:#f7b731;display:inline-block"></span>物品</span>
  `;
  
- document.getElementById('panel-minimap').classList.add('active');
+ showPanel('panel-minimap');
 }
 
 function renderMenu(title,items){
@@ -1817,9 +1853,9 @@ function renderMenu(title,items){
  });
  
  if(title.includes('精灵队伍')){
-  document.getElementById('panel-team').classList.add('active');
+  showPanel('panel-team');
  }else if(title.includes('背包')){
-  document.getElementById('panel-bag').classList.add('active');
+  showPanel('panel-bag');
  }
 }
 
@@ -1861,7 +1897,7 @@ function showStarterSelect(){
   list.appendChild(div);
  });
  
- document.getElementById('panel-starter').classList.add('active');
+ showPanel('panel-starter');
  document.getElementById('btn-confirm').onclick=()=>{
   const selected=list.querySelector('[data-selected]');
   if(!selected) return;
@@ -1870,7 +1906,7 @@ function showStarterSelect(){
   state.team=[pokemon];
   state.seen[id]=true;
   state.caught[id]=true;
-  document.getElementById('panel-starter').classList.remove('active');
+  hidePanel('panel-starter');
   const sprite=SPRITES[id];
   showDialog(`
    <div style="text-align:center">
@@ -2181,14 +2217,14 @@ function usePotion(amount){
  updateBattleUI();
 }
 
-function tryRun(){
+function tryRun() {
   const battle = state.battle;
   if (battle.legendary || battle.gym || battle.trainer) {
     setMsg('无法逃跑！对手的压迫感太强了！');
     return;
   }
   setMsg('成功逃走了！你迅速离开了战场。');
-  endBattle(false, false);
+  endBattle(false, false, true);
 }
 
 function enemyTurn(){
@@ -2227,7 +2263,7 @@ function enemyTurn(){
  updateBattleUI();
 }
 
-function endBattle(playerWon,caught=false){
+function endBattle(playerWon,caught=false,isRun=false){
  const battle=state.battle;
  if(!battle) return; // 防止重复调用
  let expGain=0,moneyGain=0;
@@ -2286,15 +2322,29 @@ function endBattle(playerWon,caught=false){
   setMsg('战斗胜利！');
   
  }else if(!playerWon&&!caught){
-  // 查找最近的护士NPC地图
-  state.currentMap = 'start-town';
-  state.player.x = 12;
-  state.player.y = 14;
-  state.team.forEach(p => { p.hp = p.maxHp; p.moves.forEach(m => m.pp = m.maxPp); });
-  
-  showDialog('你的精灵全部倒下了...<br>被紧急传送到起始镇的精灵中心接受治疗。', () => {
-    render();
-  });
+  if(isRun){
+   // 逃跑：只是退出战斗，不传送
+   setMsg('成功逃走了！');
+  }else{
+   // 战败：传送回最近护士处
+   // 查找最近的护士NPC地图
+   const nurseMaps = Object.keys(MAPS).filter(mid => 
+     MAPS[mid].npcs && MAPS[mid].npcs.some(n => n.heal)
+   );
+   
+   // 简单实现：返回到起始镇（起始镇有研究员NPC可治疗）
+   state.currentMap = 'start-town';
+   state.player.x = 12;
+   state.player.y = 14;
+   state.team.forEach(p => { 
+     p.hp = p.maxHp; 
+     p.moves.forEach(m => m.pp = m.maxPp); 
+   });
+   
+   showDialog(`你的精灵全部倒下了...<br>被紧急传送到起始镇的精灵中心接受治疗。`, () => {
+     render();
+   });
+  }
  }
  
  setTimeout(()=>{
@@ -2343,7 +2393,7 @@ document.getElementById('btn-minimap').onclick=()=>{
  renderMinimap();
 };
 document.getElementById('btn-minimap-close').onclick=()=>{
- document.getElementById('panel-minimap').classList.remove('active');
+ hidePanel('panel-minimap');
 };
 document.getElementById('btn-save').onclick=()=>{
  localStorage.setItem('pokemon_save',JSON.stringify(state));
@@ -2351,20 +2401,20 @@ document.getElementById('btn-save').onclick=()=>{
 };
 
 document.getElementById('btn-team-close').onclick=()=>{
- document.getElementById('panel-team').classList.remove('active');
+ hidePanel('panel-team');
 };
 document.getElementById('btn-bag-close').onclick=()=>{
- document.getElementById('panel-bag').classList.remove('active');
+ hidePanel('panel-bag');
 };
 document.getElementById('btn-pokedex-close').onclick=()=>{
- document.getElementById('panel-pokedex').classList.remove('active');
+ hidePanel('panel-pokedex');
 };
 document.getElementById('btn-starter-close').onclick=()=>{
- document.getElementById('panel-starter').classList.remove('active');
+ hidePanel('panel-starter');
 };
 document.getElementById('btn-pokemon-close').onclick=()=>{
- document.getElementById('panel-pokemon').classList.remove('active');
- document.getElementById('panel-team').classList.add('active');
+ hidePanel('panel-pokemon');
+ showPanel('panel-team');
 };
 
 // =========== 游戏循环 ===========
