@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>星辉传说 v2.0</title>
+<title>星辉传说 v2.3</title>
 <style>
 :root{--bg:#1a1a2e;--surface:#16213e;--primary:#4361ee;--accent:#f72585;--gold:#f7b731;--text:#e0e0e0;--text-dim:#999;--danger:#e74c3c;--success:#2ecc71;--warning:#f39c12}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -114,13 +114,13 @@ canvas{display:block}
 .overlay-dim{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:25;display:none}
 .overlay-dim.active{display:block}
 /* 虚拟十字键 */
-.virtual-dpad{position:fixed;bottom:80px;left:20px;z-index:20;display:none}
+.virtual-dpad{position:fixed;bottom:100px;left:10px;z-index:20;display:none;flex-direction:column;gap:4px}
 .virtual-dpad .dpad-row{display:flex;justify-content:center;gap:4px}
-.virtual-dpad .dpad-btn{width:50px;height:50px;background:rgba(67,97,238,0.75);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;cursor:pointer;user-select:none;touch-action:none;border:2px solid rgba(255,255,255,0.3);transition:all .1s}
+.virtual-dpad .dpad-btn{width:48px;height:48px;background:rgba(67,97,238,0.75);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;cursor:pointer;user-select:none;touch-action:none;border:2px solid rgba(255,255,255,0.3);transition:all .1s}
 .virtual-dpad .dpad-btn:active{transform:scale(0.9);background:rgba(67,97,238,0.95)}
 /* 虚拟确定/取消按钮 */
-.virtual-action{position:fixed;bottom:80px;left:calc(50% - 90px);z-index:20;display:none;gap:8px}
-.virtual-action .action-btn{width:80px;height:50px;background:rgba(46,204,113,0.8);border-radius:12px;border:2px solid rgba(255,255,255,0.3);color:#fff;font-size:16px;font-weight:600;cursor:pointer;transition:all .1s}
+.virtual-action{position:fixed;bottom:100px;right:10px;z-index:20;display:none;flex-direction:column;gap:6px}
+.virtual-action .action-btn{width:75px;height:45px;background:rgba(46,204,113,0.8);border-radius:10px;border:2px solid rgba(255,255,255,0.3);color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:all .1s}
 .virtual-action .action-btn.cancel{background:rgba(231,76,60,0.8)}
 .virtual-action .action-btn:active{transform:scale(0.9)}
 /* 移动端显示虚拟按键 */
@@ -135,7 +135,7 @@ canvas{display:block}
 </head>
 <body>
 <div class="overlay-dim" id="overlay-dim"></div>
-<div id="panel-changelog" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:12px;padding:20px;width:min(450px,95vw);max-height:80vh;border:1px solid rgba(255,255,255,.1);box-shadow:0 20px 60px rgba(0,0,0,.5);display:none;overflow-y:auto;z-index:30"><h2 style="text-align:center">星辉传说</h2><div style="text-align:center;font-size:1.5rem;font-weight:700;margin-bottom:8px">v2.1</div><div id="changelog-content" style="font-size:.85rem;line-height:1.6;max-height:50vh;overflow-y:auto"></div><button class="btn gold" id="btn-changelog-close" style="width:100%;margin-top:12px">开始冒险</button></div>
+<div id="panel-changelog" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:12px;padding:20px;width:min(450px,95vw);max-height:80vh;border:1px solid rgba(255,255,255,.1);box-shadow:0 20px 60px rgba(0,0,0,.5);display:none;overflow-y:auto;z-index:30"><h2 style="text-align:center">星辉传说</h2><div style="text-align:center;font-size:1.5rem;font-weight:700;margin-bottom:8px">v2.3</div><div id="changelog-content" style="font-size:.85rem;line-height:1.6;max-height:50vh;overflow-y:auto"></div><button class="btn gold" id="btn-changelog-close" style="width:100%;margin-top:12px">开始冒险</button></div>
 <!-- 虚拟十字键 -->
 <div class="virtual-dpad" id="virtual-dpad">
 <div class="dpad-row">
@@ -170,7 +170,7 @@ canvas{display:block}
 </div>
 <div class="panel" id="panel-team"><h2>精灵队伍</h2><div id="team-list"></div><button class="btn outline" id="btn-team-close" style="width:100%;margin-top:10px">关闭</button></div>
 <div class="panel" id="panel-bag"><h2>背包</h2><div id="bag-list"></div><button class="btn outline" id="btn-bag-close" style="width:100%;margin-top:10px">关闭</button></div>
-<div class="panel" id="panel-pokedex"><h2>精灵图鉴</h2><div id="pokedex-list"></div><button class="btn outline" id="btn-pokedex-close" style="width:100%;margin-top:10px">关闭</button></div>
+<div class="panel" id="panel-pokedex"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.1)"><h2 style="margin:0;padding:0;border:none">精灵图鉴</h2><button class="btn outline small" id="btn-pokedex-close">✕ 关闭</button></div><div id="pokedex-list"></div></div>
 <div class="panel" id="panel-pokemon"><h2>精灵详情</h2><div id="pokemon-detail"></div><button class="btn outline" id="btn-pokemon-close" style="width:100%;margin-top:10px">关闭</button></div>
 <div class="panel" id="panel-starter"><h2>选择初始精灵</h2><div id="starter-list"></div><button class="btn gold" id="btn-confirm" style="width:100%;margin-top:12px">确认选择</button><button class="btn outline" id="btn-starter-close" style="width:100%;margin-top:6px">关闭</button></div>
 <div class="battle-hud" id="battle-hud">
@@ -192,8 +192,14 @@ canvas{display:block}
 </div>
 <script>
 // =========== 常量 ===========
-const GAME_VERSION='2.1';
+const GAME_VERSION='2.3';
 const CHANGELOG=[
+ {v:'2.3',items:[
+  '队伍和图鉴界面显示精灵立绘图片',
+  '优化交互弹窗互斥，一次只显示一个',
+  '调整虚拟按键位置，减少遮挡',
+  '图鉴面板关闭按钮移至外部',
+ ]},
  {v:'2.1',items:[
   '新增虚拟十字键方向控制（移动端左侧）',
   '新增确定/取消虚拟按钮（移动端右侧）',
@@ -334,17 +340,13 @@ function loadSpriteImages(){
  const promises=[];
  Object.keys(SPRITES).forEach(id=>{
   const img=new Image();
+  img.crossOrigin='anonymous';
+  const p=new Promise(resolve=>{
+   img.onload=()=>{ SPRITES[id].image=img; resolve(); };
+   img.onerror=()=>{ console.log(`Sprite ${id}.png not found, fallback to icon`); resolve(); };
+  });
   img.src=`sprites/${id}.png`;
-  img.onload=()=>{
-   SPRITES[id].image=img;
-  };
-  img.onerror=()=>{
-   console.log(`Sprite ${id}.png not found, fallback to icon`);
-  };
-  promises.push(new Promise(resolve=>{
-   img.onload=resolve;
-   img.onerror=resolve; // 即使失败也继续
-  }));
+  promises.push(p);
  });
  return Promise.all(promises);
 }
@@ -365,7 +367,7 @@ const NPC_ICONS={
 
 // 地图数据 - 增大面积
 const MAPS={
- 'start-town':{w:24,h:16,name:'起始镇',npcs:[{x:13,y:8,name:'研究员',dlg:['欢迎来到起始镇！去研究所找博士吧！','祝你好运，年轻的训练师！']}],items:[{x:7,y:4,type:'money',amount:100},{x:18,y:11,type:'pokeball',amount:1}],exits:[{x:23,y:9,to:'route1',tx:0,ty:9}]},
+ 'start-town':{w:24,h:16,name:'起始镇',npcs:[{x:13,y:8,name:'研究员',dlg:['欢迎来到起始镇！去研究所找博士吧！','祝你好运，年轻的训练师！']},{x:10,y:5,name:'博士',dlg:['欢迎，新来的训练师！','这是给你的启动资金5000金币，好好利用！'],reward:5000}],items:[{x:7,y:4,type:'money',amount:100},{x:18,y:11,type:'pokeball',amount:1}],exits:[{x:23,y:9,to:'route1',tx:0,ty:9}]},
  'route1':{w:28,h:14,name:'常盘森林1',wild:'forest',npcs:[{x:12,y:6,name:'训练家',dlg:['我是森林训练家！要和我对战吗？'],battle:true,team:['010','011'],money:150}],items:[{x:5,y:7,type:'money',amount:50},{x:22,y:3,type:'money',amount:80},{x:14,y:10,type:'potion',amount:1}],exits:[{x:0,y:9,to:'start-town',tx:22,ty:9},{x:27,y:7,to:'port-town',tx:0,ty:7}]},
  'port-town':{w:26,h:16,name:'港口镇',npcs:[{x:10,y:11,name:'护士',dlg:['欢迎来到精灵中心！要治疗你的精灵吗？'],heal:true},{x:16,y:12,name:'店员',dlg:['欢迎光临！需要买什么吗？'],shop:true},{x:20,y:7,name:'水手',dlg:['我在海滩深处看到过一只发蓝光的精灵...','全身都是冰晶，非常漂亮！'],sailor:true},{x:6,y:4,name:'训练家2',dlg:['我是港口训练家！要挑战我吗？'],battle:true,team:['015','016'],money:200}],items:[{x:3,y:14,type:'money',amount:120}],exits:[{x:0,y:7,to:'route1',tx:26,ty:7},{x:25,y:9,to:'route2',tx:0,ty:9}]},
  'route2':{w:28,h:14,name:'阳光海滩',wild:'beach',npcs:[{x:16,y:4,name:'训练家',dlg:['我是海滩训练家！要试试我的水系精灵吗？'],battle:true,team:['017','018'],money:180}],items:[{x:7,y:8,type:'money',amount:70},{x:20,y:11,type:'money',amount:90},{x:25,y:5,type:'great-ball',amount:1}],exits:[{x:0,y:9,to:'port-town',tx:24,ty:9},{x:27,y:7,to:'mine-town',tx:0,ty:7}]},
@@ -749,9 +751,9 @@ function resize(){
  W=canvas.width=window.innerWidth;
  H=canvas.height=window.innerHeight;
  TILE_SIZE=Math.min(
-  W/(MAPS[state.currentMap].w+1),
-  H/(MAPS[state.currentMap].h+1),
-  56
+  W/MAPS[state.currentMap].w,
+  H/MAPS[state.currentMap].h,
+  64
  );
 }
 window.addEventListener('resize',()=>{resize();render();});
@@ -1121,6 +1123,16 @@ function movePlayer(direction){
  const idx=newY*map.w+newX;
  if(map.tiles[idx]&&map.tiles[idx].obstacle) return;
  
+ // NPC碰撞检测
+ if(map.npcs){
+  const npcCollision=map.npcs.find(n=>n.x===newX&&n.y===newY);
+  if(npcCollision){
+   // 靠近NPC自动触发交互
+   interactNPC(npcCollision);
+   return;
+  }
+ }
+ 
  state.player.x=newX;
  state.player.y=newY;
  state.player.anim=(state.player.anim||0)+0.5;
@@ -1217,6 +1229,19 @@ function interactNPC(npc){
     showDialog('阳光海滩的出口出现了神秘的闪光...',hideNPCPortrait);
    });
   });
+ }else if(npc.reward){
+  const key=`reward_${npc.name}`;
+  if(state.collectedItems[key]){
+   showDialog(npc.dlg[0],hideNPCPortrait);
+  }else{
+   state.collectedItems[key]=true;
+   state.money+=npc.reward;
+   showDialog(npc.dlg[0],()=>{
+    showDialog(`获得 ${npc.reward} 金币！`,()=>{
+     showDialog(npc.dlg[1],hideNPCPortrait);
+    });
+   });
+  }
  }else if(npc.dlg){
   showDialog(npc.dlg[0],()=>{
    if(npc.dlg.length>1) showDialog(npc.dlg[1],hideNPCPortrait);
@@ -1333,6 +1358,9 @@ function showChangelog(){
 
 // =========== 对话框系统 ===========
 function showDialog(text,callback){
+ // 关闭所有其他弹窗
+ hideAllDialogs();
+ 
  const dialog=document.getElementById('dialog');
  document.getElementById('dialog-text').innerHTML=text;
  const choices=document.getElementById('dialog-choices');
@@ -1349,6 +1377,9 @@ function showDialog(text,callback){
 }
 
 function showChoices(text,choiceList){
+ // 关闭所有其他弹窗
+ hideAllDialogs();
+ 
  const dialog=document.getElementById('dialog');
  document.getElementById('dialog-text').innerHTML=text;
  const choices=document.getElementById('dialog-choices');
@@ -1364,6 +1395,17 @@ function showChoices(text,choiceList){
   choices.appendChild(button);
  });
  dialog.classList.add('active');
+}
+
+function hideAllDialogs(){
+ // 关闭所有弹窗和面板
+ document.getElementById('dialog').classList.remove('active');
+ document.getElementById('npc-portrait').classList.remove('active');
+ 
+ // 关闭所有面板
+ document.querySelectorAll('.panel.active').forEach(panel=>{
+  panel.classList.remove('active');
+ });
 }
 
 function setMsg(text){
@@ -1393,9 +1435,10 @@ function openTeamMenu(){
  const items=state.team.map((p,index)=>{
   const sprite=SPRITES[p.id]||SPRITES['001'];
   const hpPercent=Math.round(p.hp/p.maxHp*100);
+  const imgTag=sprite.image?`<img src="${sprite.image.src}" style="width:48px;height:48px;border-radius:50%;object-fit:cover">`:`<div style="width:48px;height:48px;border-radius:50%;background:${sprite.color};display:flex;align-items:center;justify-content:center;font-size:24px">${sprite.icon}</div>`;
   return{
    html:`<div style="display:flex;align-items:center;gap:10px">
-     <div style="width:48px;height:48px;border-radius:50%;background:${sprite.color};display:flex;align-items:center;justify-content:center;font-size:24px">${sprite.icon}</div>
+     ${imgTag}
      <div style="flex:1">
       <div style="font-weight:700">${p.name}</div>
       <div>${p.types.map(t=>`<span class="type-badge ${TYPE_COLORS[t]}">${t}</span>`).join(' ')}</div>
@@ -1416,10 +1459,11 @@ function openTeamMenu(){
 
 function showPokemonDetail(pokemon,index){
  const sprite=SPRITES[pokemon.id]||SPRITES['001'];
+ const imgTag=sprite.image?`<img src="${sprite.image.src}" style="width:80px;height:80px;border-radius:50%;object-fit:cover">`:`<div style="width:80px;height:80px;border-radius:50%;background:${sprite.color};display:inline-flex;align-items:center;justify-content:center;font-size:40px">${sprite.icon}</div>`;
  const detail=`
   <div class="pokemon-detail active">
    <div class="detail-header">
-    <div class="detail-sprite" style="background:${sprite.color}">${sprite.icon}</div>
+    <div class="detail-sprite" style="background:${sprite.color}">${imgTag}</div>
     <div class="detail-name">${pokemon.name}</div>
     <div class="detail-level">Lv.${pokemon.level} | 经验:${pokemon.exp}/${pokemon.expToNext}</div>
     <div style="margin-top:8px">${pokemon.types.map(t=>`<span class="type-badge ${TYPE_COLORS[t]}">${t}</span>`).join(' ')}</div>
@@ -1483,18 +1527,18 @@ function openPokedex(){
   item.className=`pokedex-item ${seen?'seen':''} ${caught?'caught':''}`;
   
   if(seen){
+   const imgTag=sprite.image?`<img src="${sprite.image.src}" style="width:48px;height:48px;border-radius:50%;object-fit:cover">`:`<div class="pokedex-icon" style="background:${sprite.color}">${sprite.icon}</div>`;
    item.innerHTML=`
-    <div class="pokedex-icon" style="background:${sprite.color}">${sprite.icon}</div>
+    ${imgTag}
     <div class="pokedex-name">${species.name}</div>
     <div class="pokedex-types">${species.types.join('/')}</div>
     <div style="font-size:.6rem;color:var(--text-dim)">${caught?'已捕捉':'已遇见'}</div>
    `;
    item.onclick=()=>{
+    const detailImgTag=sprite.image?`<img src="${sprite.image.src}" style="width:80px;height:80px;border-radius:50%;object-fit:cover">`:`<div style="width:80px;height:80px;border-radius:50%;background:${sprite.color};display:inline-flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:10px">${sprite.icon}</div>`;
     showDialog(`
      <div style="text-align:center">
-      <div style="width:80px;height:80px;border-radius:50%;background:${sprite.color};display:inline-flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:10px">
-       ${sprite.icon}
-      </div>
+      ${detailImgTag}
       <div style="font-weight:700;font-size:1.2rem">${species.name}</div>
       <div style="margin:8px 0">${species.types.map(t=>`<span class="type-badge ${TYPE_COLORS[t]}">${t}</span>`).join(' ')}</div>
       <div style="font-size:.9rem;line-height:1.4">${species.desc}</div>
@@ -1520,7 +1564,8 @@ function openPokedex(){
 }
 
 function renderMenu(title,items){
- const list=document.getElementById('team-list');
+ const listId=title.includes('背包')?'bag-list':'team-list';
+ const list=document.getElementById(listId);
  list.innerHTML='';
  items.forEach(item=>{
   const div=document.createElement('div');
@@ -1546,12 +1591,11 @@ function showStarterSelect(){
  starters.forEach(id=>{
   const species=POKEDEX[id];
   const sprite=SPRITES[id];
+  const imgTag=sprite.image?`<img src="${sprite.image.src}" style="width:60px;height:60px;border-radius:50%;object-fit:cover">`:`<div style="width:60px;height:60px;border-radius:50%;background:${sprite.color};display:flex;align-items:center;justify-content:center;font-size:28px">${sprite.icon}</div>`;
   const div=document.createElement('div');
   div.className='panel-item';
   div.innerHTML=`
-   <div style="width:60px;height:60px;border-radius:50%;background:${sprite.color};display:flex;align-items:center;justify-content:center;font-size:28px">
-    ${sprite.icon}
-   </div>
+   ${imgTag}
    <div style="flex:1">
     <div style="font-weight:700;font-size:1.1rem">${species.name}</div>
     <div style="display:flex;gap:4px;margin:4px 0">
