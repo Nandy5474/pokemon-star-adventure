@@ -132,6 +132,7 @@ canvas{display:block}
 </head>
 <body>
 <div class="overlay-dim" id="overlay-dim"></div>
+<div id="panel-changelog" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:12px;padding:20px;width:min(450px,95vw);max-height:80vh;border:1px solid rgba(255,255,255,.1);box-shadow:0 20px 60px rgba(0,0,0,.5);display:none;overflow-y:auto;z-index:30"><h2 style="text-align:center">星辉传说</h2><div style="text-align:center;font-size:1.5rem;font-weight:700;margin-bottom:8px">v2.1</div><div id="changelog-content" style="font-size:.85rem;line-height:1.6;max-height:50vh;overflow-y:auto"></div><button class="btn gold" id="btn-changelog-close" style="width:100%;margin-top:12px">开始冒险</button></div>
 <div id="game">
 <canvas id="canvas"></canvas>
 <div class="overlay" id="overlay">
@@ -184,7 +185,6 @@ canvas{display:block}
 <div class="message-box" id="message-box"><div class="text" id="msg-text"></div><div class="battle-result" id="battle-result" style="display:none"><span>经验+<span id="exp-gain">0</span></span><span>金币+<span id="money-gain">0</span></span></div></div>
 <div class="dialog" id="dialog"><div class="dtext" id="dialog-text"></div><div class="choices" id="dialog-choices"></div></div>
 <div class="item-get" id="item-get"><div class="item-icon" id="item-icon">💰</div><div class="item-text" id="item-text">获得金币+100</div></div>
-<div class="panel" id="panel-changelog" style="z-index:30;width:min(450px,95vw);max-height:80vh"><h2 style="text-align:center">星辉传说</h2><div style="text-align:center;font-size:1.5rem;font-weight:700;margin-bottom:8px">v2.1</div><div id="changelog-content" style="font-size:.85rem;line-height:1.6;max-height:50vh;overflow-y:auto"></div><button class="btn gold" id="btn-changelog-close" style="width:100%;margin-top:12px">开始冒险</button></div>
 </div>
 </div>
 <script>
