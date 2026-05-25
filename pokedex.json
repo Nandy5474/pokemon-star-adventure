@@ -1,0 +1,455 @@
+{
+  "version": "2.0",
+  "last_updated": "2026-05-25",
+  "total_pokemon": 28,
+  "pokedex": {
+    "001": {
+      "id": "001",
+      "name": "焰尾兽",
+      "types": ["fire"],
+      "base": {"hp": 45, "atk": 49, "def": 49, "spa": 65, "spd": 65, "spe": 45},
+      "evo": {"level": 16, "to": "002"},
+      "moves": [
+        {"level": 1, "move": "scratch"},
+        {"level": 1, "move": "growl"},
+        {"level": 7, "move": "ember"}
+      ],
+      "desc": "热情的小火兽，尾巴燃烧着永不熄灭的火焰",
+      "rarity": "common",
+      "color": "#ff6b35",
+      "icon": "🦊",
+      "sprite_file": "001.png"
+    },
+    "002": {
+      "id": "002",
+      "name": "炎爪兽",
+      "types": ["fire"],
+      "base": {"hp": 58, "atk": 64, "def": 58, "spa": 80, "spd": 80, "spe": 58},
+      "moves": [
+        {"level": 16, "move": "fire-fang"},
+        {"level": 22, "move": "flame-burst"}
+      ],
+      "desc": "火焰变得更加猛烈，爪子能融化岩石",
+      "rarity": "common",
+      "color": "#ff8c5a",
+      "icon": "🦊",
+      "sprite_file": "002.png"
+    },
+    "003": {
+      "id": "003",
+      "name": "烈焰兽",
+      "types": ["fire"],
+      "base": {"hp": 78, "atk": 84, "def": 78, "spa": 109, "spd": 85, "spe": 100},
+      "moves": [
+        {"level": 36, "move": "flamethrower"},
+        {"level": 45, "move": "inferno"}
+      ],
+      "desc": "传说中的火焰巨兽，据说能吐出太阳般的高温",
+      "rarity": "rare",
+      "color": "#ff4d1a",
+      "icon": "🐲",
+      "sprite_file": "003.png"
+    },
+    "004": {
+      "id": "004",
+      "name": "波波龟",
+      "types": ["water"],
+      "base": {"hp": 44, "atk": 48, "def": 65, "spa": 50, "spd": 64, "spe": 43},
+      "evo": {"level": 16, "to": "005"},
+      "moves": [
+        {"level": 1, "move": "tackle"},
+        {"level": 1, "move": "tail-whip"},
+        {"level": 7, "move": "water-gun"}
+      ],
+      "desc": "温和的水龟，背上的水泡能储存大量水分",
+      "rarity": "common",
+      "color": "#4cc9f0",
+      "icon": "🐢",
+      "sprite_file": "004.png"
+    },
+    "005": {
+      "id": "005",
+      "name": "浪涌龟",
+      "types": ["water"],
+      "base": {"hp": 59, "atk": 63, "def": 80, "spa": 65, "spd": 80, "spe": 58},
+      "moves": [
+        {"level": 16, "move": "bite"},
+        {"level": 22, "move": "water-pulse"}
+      ],
+      "desc": "能掀起巨大浪花，在海洋中自由遨游",
+      "rarity": "common",
+      "color": "#2db7d6",
+      "icon": "🐢",
+      "sprite_file": "005.png"
+    },
+    "006": {
+      "id": "006",
+      "name": "海啸龟",
+      "types": ["water"],
+      "base": {"hp": 79, "atk": 83, "def": 100, "spa": 85, "spd": 105, "spe": 78},
+      "moves": [
+        {"level": 36, "move": "aqua-tail"},
+        {"level": 45, "move": "hydro-pump"}
+      ],
+      "desc": "海洋的守护者，愤怒时能引发海啸",
+      "rarity": "rare",
+      "color": "#1a9bc2",
+      "icon": "🐢",
+      "sprite_file": "006.png"
+    },
+    "007": {
+      "id": "007",
+      "name": "萌芽兽",
+      "types": ["grass"],
+      "base": {"hp": 45, "atk": 49, "def": 49, "spa": 65, "spd": 65, "spe": 45},
+      "evo": {"level": 16, "to": "008"},
+      "moves": [
+        {"level": 1, "move": "tackle"},
+        {"level": 1, "move": "growl"},
+        {"level": 7, "move": "vine-whip"}
+      ],
+      "desc": "活泼的植物兽，头上的嫩芽吸收阳光茁壮成长",
+      "rarity": "common",
+      "color": "#70e000",
+      "icon": "🦎",
+      "sprite_file": "007.png"
+    },
+    "008": {
+      "id": "008",
+      "name": "藤蔓兽",
+      "types": ["grass"],
+      "base": {"hp": 60, "atk": 62, "def": 63, "spa": 80, "spd": 80, "spe": 60},
+      "moves": [
+        {"level": 16, "move": "razor-leaf"},
+        {"level": 22, "move": "poison-powder"}
+      ],
+      "desc": "身上缠绕着结实的藤蔓，能挥舞荆棘攻击敌人",
+      "rarity": "common",
+      "color": "#5ac200",
+      "icon": "🦎",
+      "sprite_file": "008.png"
+    },
+    "009": {
+      "id": "009",
+      "name": "森林兽",
+      "types": ["grass"],
+      "base": {"hp": 80, "atk": 82, "def": 83, "spa": 100, "spd": 100, "spe": 80},
+      "moves": [
+        {"level": 36, "move": "solar-beam"},
+        {"level": 45, "move": "leaf-storm"}
+      ],
+      "desc": "森林的化身，能操控周围所有植物的力量",
+      "rarity": "rare",
+      "color": "#46a300",
+      "icon": "🦖",
+      "sprite_file": "009.png"
+    },
+    "010": {
+      "id": "010",
+      "name": "电光鼠",
+      "types": ["electric"],
+      "base": {"hp": 35, "atk": 55, "def": 30, "spa": 50, "spd": 40, "spe": 90},
+      "moves": [
+        {"level": 1, "move": "quick-attack"},
+        {"level": 5, "move": "thunder-shock"}
+      ],
+      "desc": "敏捷的小鼠，脸颊储存着电力",
+      "rarity": "common",
+      "color": "#ffd60a",
+      "icon": "🐹",
+      "sprite_file": "010.png"
+    },
+    "011": {
+      "id": "011",
+      "name": "石甲虫",
+      "types": ["rock"],
+      "base": {"hp": 50, "atk": 65, "def": 85, "spa": 35, "spd": 35, "spe": 55},
+      "moves": [
+        {"level": 1, "move": "tackle"},
+        {"level": 5, "move": "rock-throw"}
+      ],
+      "desc": "坚硬的甲壳是天然的盔甲",
+      "rarity": "common",
+      "color": "#a1887f",
+      "icon": "🐞",
+      "sprite_file": "011.png"
+    },
+    "012": {
+      "id": "012",
+      "name": "叶精灵",
+      "types": ["grass"],
+      "base": {"hp": 65, "atk": 60, "def": 45, "spa": 75, "spd": 65, "spe": 95},
+      "moves": [
+        {"level": 1, "move": "vine-whip"},
+        {"level": 5, "move": "razor-leaf"}
+      ],
+      "desc": "住在森林深处的神秘精灵",
+      "rarity": "common",
+      "color": "#8bc34a",
+      "icon": "🧚",
+      "sprite_file": "012.png"
+    },
+    "013": {
+      "id": "013",
+      "name": "暗影猫",
+      "types": ["dark"],
+      "base": {"hp": 40, "atk": 45, "def": 35, "spa": 40, "spd": 40, "spe": 90},
+      "moves": [
+        {"level": 1, "move": "scratch"},
+        {"level": 5, "move": "pursuit"}
+      ],
+      "desc": "喜欢躲在阴影里，悄无声息地靠近猎物",
+      "rarity": "common",
+      "color": "#7b4ea0",
+      "icon": "🐱",
+      "sprite_file": "013.png"
+    },
+    "014": {
+      "id": "014",
+      "name": "光羽鸟",
+      "types": ["light"],
+      "base": {"hp": 40, "atk": 30, "def": 30, "spa": 55, "spd": 30, "spe": 85},
+      "moves": [
+        {"level": 1, "move": "peck"},
+        {"level": 5, "move": "flash"}
+      ],
+      "desc": "羽毛会散发柔和光芒的美丽小鸟",
+      "rarity": "common",
+      "color": "#ffef9f",
+      "icon": "🐦",
+      "sprite_file": "014.png"
+    },
+    "015": {
+      "id": "015",
+      "name": "水母球",
+      "types": ["water"],
+      "base": {"hp": 45, "atk": 40, "def": 35, "spa": 100, "spd": 55, "spe": 70},
+      "moves": [
+        {"level": 1, "move": "water-gun"},
+        {"level": 5, "move": "acid"}
+      ],
+      "desc": "漂浮在海面上的透明水母",
+      "rarity": "common",
+      "color": "#90e0ef",
+      "icon": "🦑",
+      "sprite_file": "015.png"
+    },
+    "016": {
+      "id": "016",
+      "name": "珊瑚蟹",
+      "types": ["water", "rock"],
+      "base": {"hp": 55, "atk": 85, "def": 95, "spa": 30, "spd": 45, "spe": 45},
+      "moves": [
+        {"level": 1, "move": "rock-throw"},
+        {"level": 5, "move": "water-gun"}
+      ],
+      "desc": "背上长着珊瑚的螃蟹，防御力惊人",
+      "rarity": "common",
+      "color": "#d84315",
+      "icon": "🦀",
+      "sprite_file": "016.png"
+    },
+    "017": {
+      "id": "017",
+      "name": "海电鳗",
+      "types": ["electric"],
+      "base": {"hp": 40, "atk": 55, "def": 40, "spa": 75, "spd": 45, "spe": 80},
+      "moves": [
+        {"level": 1, "move": "thunder-shock"},
+        {"level": 5, "move": "quick-attack"}
+      ],
+      "desc": "能放出高压电流的鳗鱼",
+      "rarity": "common",
+      "color": "#ffd700",
+      "icon": "🐍",
+      "sprite_file": "017.png"
+    },
+    "018": {
+      "id": "018",
+      "name": "飞羽鸥",
+      "types": ["light"],
+      "base": {"hp": 50, "atk": 40, "def": 45, "spa": 55, "spd": 40, "spe": 75},
+      "moves": [
+        {"level": 1, "move": "peck"},
+        {"level": 5, "move": "flash"}
+      ],
+      "desc": "在港口上空盘旋的海鸟",
+      "rarity": "common",
+      "color": "#ffcc80",
+      "icon": "🕊️",
+      "sprite_file": "018.png"
+    },
+    "019": {
+      "id": "019",
+      "name": "礁石龟",
+      "types": ["rock"],
+      "base": {"hp": 70, "atk": 60, "def": 80, "spa": 30, "spd": 50, "spe": 35},
+      "moves": [
+        {"level": 1, "move": "tackle"},
+        {"level": 5, "move": "rock-throw"}
+      ],
+      "desc": "趴在礁石上一动不动的老龟",
+      "rarity": "common",
+      "color": "#795548",
+      "icon": "🐢",
+      "sprite_file": "019.png"
+    },
+    "020": {
+      "id": "020",
+      "name": "暗潮鱼",
+      "types": ["dark"],
+      "base": {"hp": 40, "atk": 55, "def": 35, "spa": 65, "spd": 35, "spe": 65},
+      "moves": [
+        {"level": 1, "move": "pursuit"},
+        {"level": 5, "move": "scratch"}
+      ],
+      "desc": "潜伏在深海暗处的凶猛鱼类",
+      "rarity": "common",
+      "color": "#4a148c",
+      "icon": "🦈",
+      "sprite_file": "020.png"
+    },
+    "021": {
+      "id": "021",
+      "name": "熔岩犬",
+      "types": ["fire"],
+      "base": {"hp": 55, "atk": 70, "def": 45, "spa": 50, "spd": 40, "spe": 80},
+      "moves": [
+        {"level": 1, "move": "ember"},
+        {"level": 5, "move": "bite"}
+      ],
+      "desc": "生活在火山脚下的凶猛猎犬",
+      "rarity": "common",
+      "color": "#ff5722",
+      "icon": "🐺",
+      "sprite_file": "021.png"
+    },
+    "022": {
+      "id": "022",
+      "name": "岩石蛇",
+      "types": ["rock", "fire"],
+      "base": {"hp": 65, "atk": 75, "def": 70, "spa": 40, "spd": 40, "spe": 35},
+      "moves": [
+        {"level": 1, "move": "rock-throw"},
+        {"level": 5, "move": "ember"}
+      ],
+      "desc": "由熔岩和岩石构成的巨蛇",
+      "rarity": "common",
+      "color": "#8d6e63",
+      "icon": "🐲",
+      "sprite_file": "022.png"
+    },
+    "023": {
+      "id": "023",
+      "name": "雷霆鹰",
+      "types": ["electric"],
+      "base": {"hp": 50, "atk": 45, "def": 40, "spa": 90, "spd": 50, "spe": 100},
+      "moves": [
+        {"level": 1, "move": "thunder-shock"},
+        {"level": 5, "move": "peck"}
+      ],
+      "desc": "翱翔于雷云之上的闪电之鹰",
+      "rarity": "common",
+      "color": "#ffeb3b",
+      "icon": "🦅",
+      "sprite_file": "023.png"
+    },
+    "024": {
+      "id": "024",
+      "name": "矿洞蝠",
+      "types": ["dark"],
+      "base": {"hp": 40, "atk": 45, "def": 35, "spa": 30, "spd": 40, "spe": 55},
+      "moves": [
+        {"level": 1, "move": "pursuit"},
+        {"level": 5, "move": "brick-break"}
+      ],
+      "desc": "栖息在矿洞中的蝙蝠群",
+      "rarity": "common",
+      "color": "#673ab7",
+      "icon": "🦇",
+      "sprite_file": "024.png"
+    },
+    "025": {
+      "id": "025",
+      "name": "辉光蝶",
+      "types": ["light"],
+      "base": {"hp": 55, "atk": 55, "def": 50, "spa": 85, "spd": 55, "spe": 90},
+      "moves": [
+        {"level": 1, "move": "flash"},
+        {"level": 5, "move": "razor-leaf"}
+      ],
+      "desc": "翅膀闪耀着美丽光芒的蝴蝶",
+      "rarity": "common",
+      "color": "#ffe082",
+      "icon": "🦋",
+      "sprite_file": "025.png"
+    },
+    "050": {
+      "id": "050",
+      "name": "霜晶鹿",
+      "types": ["ice"],
+      "base": {"hp": 95, "atk": 60, "def": 80, "spa": 110, "spd": 80, "spe": 65},
+      "moves": [
+        {"level": 1, "move": "powder-snow"},
+        {"level": 1, "move": "mist"},
+        {"level": 15, "move": "ice-beam"},
+        {"level": 30, "move": "aurora-beam"},
+        {"level": 30, "move": "dark-ice"},
+        {"level": 30, "move": "blizzard"}
+      ],
+      "desc": "传说中唯一的冰系精灵，全身覆盖着永恒不化的冰晶",
+      "rarity": "legendary",
+      "color": "#90e0ef",
+      "icon": "🦌",
+      "sprite_file": "050.png",
+      "capture_rate": 100
+    },
+    "999": {
+      "id": "999",
+      "name": "星辉龙",
+      "types": ["light", "dark"],
+      "base": {"hp": 120, "atk": 100, "def": 100, "spa": 120, "spd": 100, "spe": 110},
+      "moves": [
+        {"level": 1, "move": "dragon-breath"},
+        {"level": 1, "move": "cosmic-power"},
+        {"level": 30, "move": "light-of-ruin"},
+        {"level": 50, "move": "dark-pulse"}
+      ],
+      "desc": "掌控光与暗的传说之龙，据说是星空中诞生的生命",
+      "rarity": "legendary",
+      "color": "#9c27b0",
+      "icon": "🐉",
+      "sprite_file": "999.png"
+    }
+  },
+  "moves": {
+    "aurora-beam": {
+      "name": "极光光束",
+      "type": "light",
+      "category": "special",
+      "power": 80,
+      "acc": 100,
+      "pp": 15,
+      "desc": "释放极光般美丽的光束攻击"
+    },
+    "dark-ice": {
+      "name": "暗冰冲击",
+      "type": "dark",
+      "category": "special",
+      "power": 80,
+      "acc": 100,
+      "pp": 15,
+      "desc": "融合黑暗与冰霜的强力冲击"
+    }
+  },
+  "type_chart": {
+    "fire": {"strong": ["ice", "grass"], "weak": ["water", "rock"], "immune": ["dark"]},
+    "water": {"strong": ["fire", "ice"], "weak": ["grass", "electric"], "immune": ["ice"]},
+    "grass": {"strong": ["water", "light"], "weak": ["fire", "ice"], "immune": ["light"]},
+    "electric": {"strong": ["water", "ice"], "weak": ["grass", "rock"], "immune": []},
+    "rock": {"strong": ["electric", "fire"], "weak": ["grass", "ice"], "immune": []},
+    "ice": {"strong": ["grass"], "weak": ["water"], "immune": []},
+    "light": {"strong": ["dark"], "weak": ["dark"], "immune": []},
+    "dark": {"strong": ["light"], "weak": ["light"], "immune": []}
+  }
+}

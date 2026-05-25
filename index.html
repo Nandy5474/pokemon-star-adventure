@@ -1,0 +1,1898 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>星辉传说 v2.0</title>
+<style>
+:root{--bg:#1a1a2e;--surface:#16213e;--primary:#4361ee;--accent:#f72585;--gold:#f7b731;--text:#e0e0e0;--text-dim:#999;--danger:#e74c3c;--success:#2ecc71;--warning:#f39c12}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;overflow:hidden;height:100vh;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+#game{width:100vw;height:100vh;position:relative;overflow:hidden}
+canvas{display:block}
+.overlay{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10}
+.overlay>*{pointer-events:auto}
+.map-name{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);padding:6px 16px;border-radius:20px;font-weight:700;font-size:.9rem;border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(5px);z-index:5}
+.interact-hint{position:absolute;top:10px;right:10px;background:rgba(22,33,62,.9);padding:8px 12px;border-radius:8px;font-size:.8rem;border-left:3px solid var(--accent);max-width:200px;backdrop-filter:blur(5px);display:none}
+.interact-hint.active{display:block}
+.interact-hint .hint-title{font-weight:700;color:var(--accent)}
+.npc-portrait{position:absolute;bottom:120px;left:50%;transform:translateX(-50%);width:120px;height:120px;border-radius:50%;border:3px solid var(--accent);background:var(--surface);display:none;align-items:center;justify-content:center;font-size:60px;z-index:25}
+.npc-portrait.active{display:flex}
+.quick-bar{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:6px;z-index:15}
+.quick-bar.collapsed{width:44px}
+.quick-bar.collapsed .btn{width:44px;justify-content:center}
+.quick-bar.collapsed .btn span:not(.icon){display:none}
+.quick-bar.battle-hidden{display:none}
+.btn{background:var(--primary);color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:0.9rem;font-weight:600;cursor:pointer;min-height:44px;transition:all .15s;display:flex;align-items:center;gap:6px}
+.btn:active{transform:scale(.96);opacity:.9}
+.btn.gold{background:var(--gold);color:var(--bg)}
+.btn.success{background:var(--success)}
+.btn.warning{background:var(--warning)}
+.btn.danger{background:var(--danger)}
+.btn.outline{background:transparent;border:2px solid var(--primary);color:var(--primary)}
+.btn.small{padding:6px 10px;font-size:.8rem;min-height:36px}
+.btn .icon{font-size:1.1em}
+.panel{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:12px;padding:20px;width:min(400px,92vw);max-height:70vh;border:1px solid rgba(255,255,255,.1);box-shadow:0 20px 60px rgba(0,0,0,.5);display:none;overflow-y:auto;z-index:20}
+.panel.active{display:block}
+.panel h2{font-size:1.2rem;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.1)}
+.panel h3{font-size:1rem;margin:8px 0 4px;color:var(--accent)}
+.panel-item{display:flex;align-items:center;padding:10px;border-radius:8px;cursor:pointer;transition:all .15s;gap:10px;margin-bottom:4px}
+.panel-item:hover{background:rgba(255,255,255,.05)}
+.panel-item.selected{border:2px solid var(--accent);background:rgba(247,37,133,.1)}
+.hp-mini{height:4px;background:rgba(255,255,255,.1);border-radius:2px;flex:1;overflow:hidden}
+.hp-mini-fill{height:100%;background:var(--success);transition:width .3s}
+.hp-mini-fill.low{background:var(--danger)}
+.battle-hud{position:absolute;bottom:0;left:0;right:0;background:rgba(22,33,62,.96);backdrop-filter:blur(10px);padding:12px;border-top:2px solid rgba(255,255,255,.1);display:none}
+.battle-hud.active{display:block}
+.battle-status{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px}
+.battle-status .info{background:rgba(255,255,255,.03);border-radius:8px;padding:8px 10px}
+.battle-status .name{font-weight:700;font-size:.85rem}
+.battle-status .level{font-size:.7rem;color:var(--text-dim)}
+.hp-bar{height:6px;background:rgba(255,255,255,.1);border-radius:3px;margin:4px 0;overflow:hidden}
+.hp-fill{height:100%;background:var(--success);transition:width .4s ease}
+.hp-fill.low{background:var(--danger)}
+.battle-menu{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.battle-menu.hidden{display:none}
+.battle-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.battle-actions.hidden{display:none}
+.switch-menu{display:grid;gap:6px}
+.switch-menu.hidden{display:none}
+.move-item{background:rgba(255,255,255,.05);border-radius:6px;padding:8px;position:relative;cursor:pointer;transition:all .15s}
+.move-item:hover{background:rgba(255,255,255,.1)}
+.move-item .move-name{font-size:.85rem;font-weight:600}
+.move-item .move-pp{font-size:.7rem;opacity:.8}
+.move-item .type-badge{position:absolute;top:4px;right:4px}
+.move-item .dmg-mult{position:absolute;bottom:4px;right:4px;font-size:.7rem;font-weight:700;padding:1px 4px;border-radius:3px}
+.move-item .dmg-mult.effective{background:var(--success);color:#fff}
+.move-item .dmg-mult.weak{background:var(--danger);color:#fff}
+.move-item .dmg-mult.normal{background:var(--text-dim);color:#fff}
+.move-item.disabled{opacity:.5;cursor:not-allowed}
+.message-box{position:absolute;bottom:70px;left:0;right:0;background:rgba(22,33,62,.93);padding:10px 16px;border-top:1px solid rgba(255,255,255,.1);display:none;z-index:15}
+.message-box.active{display:block}
+.message-box .battle-result{display:flex;justify-content:space-between;align-items:center;margin-top:4px;font-size:.8rem}
+.message-box .battle-result span{color:var(--gold)}
+.dialog{position:absolute;bottom:0;left:0;right:0;background:rgba(22,33,62,.97);padding:16px;border-top:2px solid rgba(255,255,255,.1);display:none;z-index:20}
+.dialog.active{display:block}
+.dialog .dtext{font-size:.9rem;margin-bottom:12px;line-height:1.5}
+.dialog .choices{display:flex;flex-wrap:wrap;gap:8px}
+.type-badge{padding:2px 8px;border-radius:10px;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.t-fire{background:#ff6b35;color:#fff}
+.t-water{background:#4cc9f0;color:#333}
+.t-grass{background:#70e000;color:#1a1a2e}
+.t-electric{background:#ffd60a;color:#333}
+.t-rock{background:#b5838d;color:#fff}
+.t-ice{background:#90e0ef;color:#333}
+.t-light{background:#ffef9f;color:#333}
+.t-dark{background:#7209b7;color:#fff}
+.t-normal{background:#999;color:#fff}
+.pokemon-detail{display:none}
+.pokemon-detail.active{display:block}
+.pokemon-detail .detail-header{text-align:center;margin-bottom:16px}
+.pokemon-detail .detail-sprite{width:80px;height:80px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:8px}
+.pokemon-detail .detail-name{font-size:1.3rem;font-weight:700}
+.pokemon-detail .detail-level{font-size:.9rem;color:var(--text-dim)}
+.pokemon-detail .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:12px 0}
+.pokemon-detail .stat-item{background:rgba(255,255,255,.05);padding:6px;border-radius:6px}
+.pokemon-detail .stat-label{font-size:.7rem;color:var(--text-dim)}
+.pokemon-detail .stat-value{font-size:.9rem;font-weight:600}
+.pokedex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;max-height:300px;overflow-y:auto}
+.pokedex-item{text-align:center;padding:8px;border-radius:8px;background:rgba(255,255,255,.05);cursor:pointer}
+.pokedex-item.seen{background:rgba(255,255,255,.1)}
+.pokedex-item.caught{background:rgba(67,97,238,.2)}
+.pokedex-item .pokedex-icon{width:60px;height:60px;border-radius:50%;margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:28px}
+.pokedex-item .pokedex-name{font-size:.8rem;font-weight:600}
+.pokedex-item .pokedex-types{font-size:.6rem;color:var(--text-dim)}
+.pokedex-item .pokedex-unknown{opacity:.3}
+.item-get{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(22,33,62,.95);padding:12px 20px;border-radius:10px;border:2px solid var(--gold);display:none;z-index:25}
+.item-get.active{display:block}
+.item-get .item-icon{font-size:2rem;text-align:center;margin-bottom:8px}
+.item-get .item-text{text-align:center;font-weight:600}
+@media(max-width:768px){.btn{font-size:.8rem;padding:10px}.quick-bar{right:5px;bottom:5px}.panel{width:96vw}}
+</style>
+</head>
+<body>
+<div id="game">
+<canvas id="canvas"></canvas>
+<div class="overlay" id="overlay">
+<div class="map-name" id="map-name"></div>
+<div class="interact-hint" id="interact-hint"><div class="hint-title" id="hint-title"></div><div id="hint-text"></div></div>
+<div class="npc-portrait" id="npc-portrait"></div>
+<div class="quick-bar" id="quick-bar">
+<button class="btn small outline" id="btn-collapse"><span class="icon">◀</span><span>收起</span></button>
+<button class="btn small" id="btn-team"><span class="icon">👥</span><span>队伍</span></button>
+<button class="btn small" id="btn-bag"><span class="icon">🎒</span><span>背包</span></button>
+<button class="btn small" id="btn-pokedex"><span class="icon">📖</span><span>图鉴</span></button>
+<button class="btn small" id="btn-map"><span class="icon">🗺️</span><span>地图</span></button>
+<button class="btn small" id="btn-save"><span class="icon">💾</span><span>保存</span></button>
+</div>
+<div class="panel" id="panel-team"><h2>精灵队伍</h2><div id="team-list"></div><button class="btn outline" id="btn-team-close" style="width:100%;margin-top:10px">关闭</button></div>
+<div class="panel" id="panel-bag"><h2>背包</h2><div id="bag-list"></div><button class="btn outline" id="btn-bag-close" style="width:100%;margin-top:10px">关闭</button></div>
+<div class="panel" id="panel-pokedex"><h2>精灵图鉴</h2><div id="pokedex-list"></div><button class="btn outline" id="btn-pokedex-close" style="width:100%;margin-top:10px">关闭</button></div>
+<div class="panel" id="panel-pokemon"><h2>精灵详情</h2><div id="pokemon-detail"></div><button class="btn outline" id="btn-pokemon-close" style="width:100%;margin-top:10px">关闭</button></div>
+<div class="panel" id="panel-starter"><h2>选择初始精灵</h2><div id="starter-list"></div><button class="btn gold" id="btn-confirm" style="width:100%;margin-top:12px">确认选择</button></div>
+<div class="battle-hud" id="battle-hud">
+<div class="battle-status"><div class="info" id="p-info"></div><div class="info" id="e-info"></div></div>
+<div class="battle-menu" id="battle-menu">
+<button class="btn" id="btn-fight"><span class="icon">⚔️</span>战斗</button>
+<button class="btn" id="btn-switch"><span class="icon">🔄</span>更换</button>
+<button class="btn" id="btn-bag-battle"><span class="icon">🎒</span>道具</button>
+<button class="btn danger" id="btn-run"><span class="icon">🏃</span>逃跑</button>
+</div>
+<div class="battle-actions hidden" id="battle-actions"></div>
+<div class="switch-menu hidden" id="switch-menu"></div>
+</div>
+<div class="message-box" id="message-box"><div class="text" id="msg-text"></div><div class="battle-result" id="battle-result" style="display:none"><span>经验+<span id="exp-gain">0</span></span><span>金币+<span id="money-gain">0</span></span></div></div>
+<div class="dialog" id="dialog"><div class="dtext" id="dialog-text"></div><div class="choices" id="dialog-choices"></div></div>
+<div class="item-get" id="item-get"><div class="item-icon" id="item-icon">💰</div><div class="item-text" id="item-text">获得金币+100</div></div>
+</div>
+</div>
+<script>
+// =========== 常量 ===========
+const TYPES=['fire','water','grass','electric','rock','ice','light','dark'];
+const TYPE_CHART={
+ fire:{strong:['ice','grass'],weak:['water','rock'],immune:['dark']},
+ water:{strong:['fire','ice'],weak:['grass','electric'],immune:['ice']},
+ grass:{strong:['water','light'],weak:['fire','ice'],immune:['light']},
+ electric:{strong:['water','ice'],weak:['grass','rock'],immune:[]},
+ rock:{strong:['electric','fire'],weak:['grass','ice'],immune:[]},
+ ice:{strong:['grass'],weak:['water'],immune:[]},
+ light:{strong:['dark'],weak:['dark'],immune:[]},
+ dark:{strong:['light'],weak:['light'],immune:[]}
+};
+const TYPE_COLORS={'fire':'t-fire','water':'t-water','grass':'t-grass','electric':'t-electric','rock':'t-rock','ice':'t-ice','light':'t-light','dark':'t-dark','normal':'t-normal'};
+const TYPE_HEX={'fire':'#ff6b35','water':'#4cc9f0','grass':'#70e000','electric':'#ffd60a','rock':'#b5838d','ice':'#90e0ef','light':'#ffef9f','dark':'#7209b7','normal':'#999'};
+const TYPE_ICONS={'fire':'🔥','water':'💧','grass':'🌿','electric':'⚡','rock':'🪨','ice':'❄️','light':'✨','dark':'🌑','normal':'⚪'};
+
+const MOVES={
+ scratch:{name:'抓击',type:'normal',category:'physical',power:40,acc:100,pp:35},
+ tackle:{name:'撞击',type:'normal',category:'physical',power:40,acc:100,pp:35},
+ growl:{name:'吼叫',type:'normal',category:'status',power:0,acc:100,pp:40,effect:'atk-1'},
+ ember:{name:'火花',type:'fire',category:'special',power:40,acc:100,pp:25},
+ 'fire-fang':{name:'火焰牙',type:'fire',category:'physical',power:65,acc:95,pp:15},
+ 'flame-burst':{name:'烈焰爆',type:'fire',category:'special',power:75,acc:100,pp:15},
+ flamethrower:{name:'喷射火焰',type:'fire',category:'special',power:90,acc:100,pp:15},
+ inferno:{name:'炼狱',type:'fire',category:'special',power:100,acc:50,pp:5},
+ 'tail-whip':{name:'摇尾巴',type:'normal',category:'status',power:0,acc:100,pp:30,effect:'def-1'},
+ 'water-gun':{name:'水枪',type:'water',category:'special',power:40,acc:100,pp:25},
+ bite:{name:'咬住',type:'dark',category:'physical',power:60,acc:100,pp:25},
+ 'water-pulse':{name:'水之波动',type:'water',category:'special',power:60,acc:100,pp:20},
+ 'aqua-tail':{name:'水流尾',type:'water',category:'physical',power:90,acc:90,pp:10},
+ 'hydro-pump':{name:'水炮',type:'water',category:'special',power:110,acc:80,pp:5},
+ 'vine-whip':{name:'藤鞭',type:'grass',category:'physical',power:45,acc:100,pp:25},
+ 'razor-leaf':{name:'飞叶快刀',type:'grass',category:'physical',power:55,acc:95,pp:25},
+ 'poison-powder':{name:'毒粉',type:'grass',category:'status',power:0,acc:75,pp:35,effect:'poison'},
+ 'solar-beam':{name:'日光束',type:'grass',category:'special',power:120,acc:100,pp:10},
+ 'leaf-storm':{name:'飞叶风暴',type:'grass',category:'special',power:130,acc:90,pp:5},
+ 'quick-attack':{name:'电光一闪',type:'normal',category:'physical',power:40,acc:100,pp:30,priority:1},
+ 'thunder-shock':{name:'电击',type:'electric',category:'special',power:40,acc:100,pp:30},
+ 'rock-throw':{name:'落石',type:'rock',category:'physical',power:50,acc:90,pp:15},
+ pursuit:{name:'追击',type:'dark',category:'physical',power:40,acc:100,pp:20},
+ peck:{name:'啄',type:'normal',category:'physical',power:35,acc:100,pp:35},
+ flash:{name:'闪光',type:'light',category:'status',power:0,acc:100,pp:20,effect:'acc-1'},
+ acid:{name:'溶解液',type:'water',category:'special',power:40,acc:100,pp:30},
+ 'brick-break':{name:'劈瓦',type:'rock',category:'physical',power:75,acc:100,pp:15},
+ 'ice-beam':{name:'冰冻光束',type:'ice',category:'special',power:90,acc:100,pp:10},
+ blizzard:{name:'暴风雪',type:'ice',category:'special',power:110,acc:70,pp:5},
+ 'powder-snow':{name:'细雪',type:'ice',category:'special',power:40,acc:100,pp:25},
+ mist:{name:'白雾',type:'ice',category:'status',power:0,acc:100,pp:30,effect:'def-up'},
+ 'dragon-breath':{name:'龙息',type:'light',category:'special',power:60,acc:100,pp:20},
+ 'cosmic-power':{name:'宇宙力量',type:'light',category:'status',power:0,acc:100,pp:20,effect:'both-up'},
+ 'light-of-ruin':{name:'毁灭之光',type:'light',category:'special',power:140,acc:90,pp:5},
+ 'dark-pulse':{name:'恶之波动',type:'dark',category:'special',power:80,acc:100,pp:15},
+ 'aurora-beam':{name:'极光光束',type:'light',category:'special',power:80,acc:100,pp:15},
+ 'dark-ice':{name:'暗冰冲击',type:'dark',category:'special',power:80,acc:100,pp:15},
+};
+
+const POKEDEX={
+ '001':{id:'001',name:'焰尾兽',types:['fire'],base:{hp:45,atk:49,def:49,spa:65,spd:65,spe:45},evo:{level:16,to:'002'},moves:[{level:1,move:'scratch'},{level:1,move:'growl'},{level:7,move:'ember'}],desc:'热情的小火兽，尾巴燃烧着永不熄灭的火焰',rarity:'common'},
+ '002':{id:'002',name:'炎爪兽',types:['fire'],base:{hp:58,atk:64,def:58,spa:80,spd:80,spe:58},moves:[{level:16,move:'fire-fang'},{level:22,move:'flame-burst'}],desc:'火焰变得更加猛烈，爪子能融化岩石',rarity:'common'},
+ '003':{id:'003',name:'烈焰兽',types:['fire'],base:{hp:78,atk:84,def:78,spa:109,spd:85,spe:100},moves:[{level:36,move:'flamethrower'},{level:45,move:'inferno'}],desc:'传说中的火焰巨兽，据说能吐出太阳般的高温',rarity:'rare'},
+ '004':{id:'004',name:'波波龟',types:['water'],base:{hp:44,atk:48,def:65,spa:50,spd:64,spe:43},evo:{level:16,to:'005'},moves:[{level:1,move:'tackle'},{level:1,move:'tail-whip'},{level:7,move:'water-gun'}],desc:'温和的水龟，背上的水泡能储存大量水分',rarity:'common'},
+ '005':{id:'005',name:'浪涌龟',types:['water'],base:{hp:59,atk:63,def:80,spa:65,spd:80,spe:58},moves:[{level:16,move:'bite'},{level:22,move:'water-pulse'}],desc:'能掀起巨大浪花，在海洋中自由遨游',rarity:'common'},
+ '006':{id:'006',name:'海啸龟',types:['water'],base:{hp:79,atk:83,def:100,spa:85,spd:105,spe:78},moves:[{level:36,move:'aqua-tail'},{level:45,move:'hydro-pump'}],desc:'海洋的守护者，愤怒时能引发海啸',rarity:'rare'},
+ '007':{id:'007',name:'萌芽兽',types:['grass'],base:{hp:45,atk:49,def:49,spa:65,spd:65,spe:45},evo:{level:16,to:'008'},moves:[{level:1,move:'tackle'},{level:1,move:'growl'},{level:7,move:'vine-whip'}],desc:'活泼的植物兽，头上的嫩芽吸收阳光茁壮成长',rarity:'common'},
+ '008':{id:'008',name:'藤蔓兽',types:['grass'],base:{hp:60,atk:62,def:63,spa:80,spd:80,spe:60},moves:[{level:16,move:'razor-leaf'},{level:22,move:'poison-powder'}],desc:'身上缠绕着结实的藤蔓，能挥舞荆棘攻击敌人',rarity:'common'},
+ '009':{id:'009',name:'森林兽',types:['grass'],base:{hp:80,atk:82,def:83,spa:100,spd:100,spe:80},moves:[{level:36,move:'solar-beam'},{level:45,move:'leaf-storm'}],desc:'森林的化身，能操控周围所有植物的力量',rarity:'rare'},
+ '010':{id:'010',name:'电光鼠',types:['electric'],base:{hp:35,atk:55,def:30,spa:50,spd:40,spe:90},moves:[{level:1,move:'quick-attack'},{level:5,move:'thunder-shock'}],desc:'敏捷的小鼠，脸颊储存着电力',rarity:'common'},
+ '011':{id:'011',name:'石甲虫',types:['rock'],base:{hp:50,atk:65,def:85,spa:35,spd:35,spe:55},moves:[{level:1,move:'tackle'},{level:5,move:'rock-throw'}],desc:'坚硬的甲壳是天然的盔甲',rarity:'common'},
+ '012':{id:'012',name:'叶精灵',types:['grass'],base:{hp:65,atk:60,def:45,spa:75,spd:65,spe:95},moves:[{level:1,move:'vine-whip'},{level:5,move:'razor-leaf'}],desc:'住在森林深处的神秘精灵',rarity:'common'},
+ '013':{id:'013',name:'暗影猫',types:['dark'],base:{hp:40,atk:45,def:35,spa:40,spd:40,spe:90},moves:[{level:1,move:'scratch'},{level:5,move:'pursuit'}],desc:'喜欢躲在阴影里，悄无声息地靠近猎物',rarity:'common'},
+ '014':{id:'014',name:'光羽鸟',types:['light'],base:{hp:40,atk:30,def:30,spa:55,spd:30,spe:85},moves:[{level:1,move:'peck'},{level:5,move:'flash'}],desc:'羽毛会散发柔和光芒的美丽小鸟',rarity:'common'},
+ '015':{id:'015',name:'水母球',types:['water'],base:{hp:45,atk:40,def:35,spa:100,spd:55,spe:70},moves:[{level:1,move:'water-gun'},{level:5,move:'acid'}],desc:'漂浮在海面上的透明水母',rarity:'common'},
+ '016':{id:'016',name:'珊瑚蟹',types:['water','rock'],base:{hp:55,atk:85,def:95,spa:30,spd:45,spe:45},moves:[{level:1,move:'rock-throw'},{level:5,move:'water-gun'}],desc:'背上长着珊瑚的螃蟹，防御力惊人',rarity:'common'},
+ '017':{id:'017',name:'海电鳗',types:['electric'],base:{hp:40,atk:55,def:40,spa:75,spd:45,spe:80},moves:[{level:1,move:'thunder-shock'},{level:5,move:'quick-attack'}],desc:'能放出高压电流的鳗鱼',rarity:'common'},
+ '018':{id:'018',name:'飞羽鸥',types:['light'],base:{hp:50,atk:40,def:45,spa:55,spd:40,spe:75},moves:[{level:1,move:'peck'},{level:5,move:'flash'}],desc:'在港口上空盘旋的海鸟',rarity:'common'},
+ '019':{id:'019',name:'礁石龟',types:['rock'],base:{hp:70,atk:60,def:80,spa:30,spd:50,spe:35},moves:[{level:1,move:'tackle'},{level:5,move:'rock-throw'}],desc:'趴在礁石上一动不动的老龟',rarity:'common'},
+ '020':{id:'020',name:'暗潮鱼',types:['dark'],base:{hp:40,atk:55,def:35,spa:65,spd:35,spe:65},moves:[{level:1,move:'pursuit'},{level:5,move:'scratch'}],desc:'潜伏在深海暗处的凶猛鱼类',rarity:'common'},
+ '021':{id:'021',name:'熔岩犬',types:['fire'],base:{hp:55,atk:70,def:45,spa:50,spd:40,spe:80},moves:[{level:1,move:'ember'},{level:5,move:'bite'}],desc:'生活在火山脚下的凶猛猎犬',rarity:'common'},
+ '022':{id:'022',name:'岩石蛇',types:['rock','fire'],base:{hp:65,atk:75,def:70,spa:40,spd:40,spe:35},moves:[{level:1,move:'rock-throw'},{level:5,move:'ember'}],desc:'由熔岩和岩石构成的巨蛇',rarity:'common'},
+ '023':{id:'023',name:'雷霆鹰',types:['electric'],base:{hp:50,atk:45,def:40,spa:90,spd:50,spe:100},moves:[{level:1,move:'thunder-shock'},{level:5,move:'peck'}],desc:'翱翔于雷云之上的闪电之鹰',rarity:'common'},
+ '024':{id:'024',name:'矿洞蝠',types:['dark'],base:{hp:40,atk:45,def:35,spa:30,spd:40,spe:55},moves:[{level:1,move:'pursuit'},{level:5,move:'brick-break'}],desc:'栖息在矿洞中的蝙蝠群',rarity:'common'},
+ '025':{id:'025',name:'辉光蝶',types:['light'],base:{hp:55,atk:55,def:50,spa:85,spd:55,spe:90},moves:[{level:1,move:'flash'},{level:5,move:'razor-leaf'}],desc:'翅膀闪耀着美丽光芒的蝴蝶',rarity:'common'},
+ '050':{id:'050',name:'霜晶鹿',types:['ice'],base:{hp:95,atk:60,def:80,spa:110,spd:80,spe:65},moves:[{level:1,move:'powder-snow'},{level:1,move:'mist'},{level:15,move:'ice-beam'},{level:30,move:'aurora-beam'},{level:30,move:'dark-ice'},{level:30,move:'blizzard'}],desc:'传说中唯一的冰系精灵，全身覆盖着永恒不化的冰晶',rarity:'legendary',captureRate:100},
+ '999':{id:'999',name:'星辉龙',types:['light','dark'],base:{hp:120,atk:100,def:100,spa:120,spd:100,spe:110},moves:[{level:1,move:'dragon-breath'},{level:1,move:'cosmic-power'},{level:30,move:'light-of-ruin'},{level:50,move:'dark-pulse'}],desc:'掌控光与暗的传说之龙，据说是星空中诞生的生命',rarity:'legendary'}
+};
+
+const SPRITES={
+ '001':{color:'#ff6b35',icon:'🦊'},
+ '002':{color:'#ff8c5a',icon:'🦊'},
+ '003':{color:'#ff4d1a',icon:'🐲'},
+ '004':{color:'#4cc9f0',icon:'🐢'},
+ '005':{color:'#2db7d6',icon:'🐢'},
+ '006':{color:'#1a9bc2',icon:'🐢'},
+ '007':{color:'#70e000',icon:'🦎'},
+ '008':{color:'#5ac200',icon:'🦎'},
+ '009':{color:'#46a300',icon:'🦖'},
+ '010':{color:'#ffd60a',icon:'🐹'},
+ '011':{color:'#a1887f',icon:'🐞'},
+ '012':{color:'#8bc34a',icon:'🧚'},
+ '013':{color:'#7b4ea0',icon:'🐱'},
+ '014':{color:'#ffef9f',icon:'🐦'},
+ '015':{color:'#90e0ef',icon:'🦑'},
+ '016':{color:'#d84315',icon:'🦀'},
+ '017':{color:'#ffd700',icon:'🐍'},
+ '018':{color:'#ffcc80',icon:'🕊️'},
+ '019':{color:'#795548',icon:'🐢'},
+ '020':{color:'#4a148c',icon:'🦈'},
+ '021':{color:'#ff5722',icon:'🐺'},
+ '022':{color:'#8d6e63',icon:'🐲'},
+ '023':{color:'#ffeb3b',icon:'🦅'},
+ '024':{color:'#673ab7',icon:'🦇'},
+ '025':{color:'#ffe082',icon:'🦋'},
+ '050':{color:'#90e0ef',icon:'🦌'},
+ '999':{color:'#9c27b0',icon:'🐉'}
+};
+
+const NPC_ICONS={
+ '老人':{icon:'👴',color:'#FFD166',name:'老人'},
+ '研究员':{icon:'👨‍🔬',color:'#06D6A0',name:'研究员'},
+ '博士':{icon:'👨‍🔬',color:'#06D6A0',name:'博士'},
+ '护士':{icon:'👩‍⚕️',color:'#EF476F',name:'护士'},
+ '店员':{icon:'👨‍💼',color:'#F7B731',name:'店员'},
+ '水手':{icon:'👨‍✈️',color:'#4CC9F0',name:'水手'},
+ '高级店员':{icon:'👔',color:'#FF9A76',name:'高级店员'},
+ '道馆主':{icon:'🥋',color:'#F72585',name:'道馆主'},
+ '??':{icon:'👻',color:'#7209B7',name:'??'},
+ '训练家':{icon:'👦',color:'#4ECDC4',name:'森林训练家'},
+ '训练家2':{icon:'👧',color:'#FF6B6B',name:'港口训练家'}
+};
+
+// 地图数据 - 增大面积
+const MAPS={
+ 'start-town':{w:24,h:16,name:'起始镇',npcs:[{x:13,y:8,name:'研究员',dlg:['欢迎来到起始镇！去研究所找博士吧！','祝你好运，年轻的训练师！']}],items:[{x:7,y:4,type:'money',amount:100},{x:18,y:11,type:'pokeball',amount:1}],exits:[{x:23,y:9,to:'route1',tx:0,ty:9}]},
+ 'route1':{w:28,h:14,name:'常盘森林1',wild:'forest',npcs:[{x:12,y:6,name:'训练家',dlg:['我是森林训练家！要和我对战吗？'],battle:true,team:['010','011'],money:150}],items:[{x:5,y:7,type:'money',amount:50},{x:22,y:3,type:'money',amount:80},{x:14,y:10,type:'potion',amount:1}],exits:[{x:0,y:9,to:'start-town',tx:22,ty:9},{x:27,y:7,to:'port-town',tx:0,ty:7}]},
+ 'port-town':{w:26,h:16,name:'港口镇',npcs:[{x:10,y:11,name:'护士',dlg:['欢迎来到精灵中心！要治疗你的精灵吗？'],heal:true},{x:16,y:12,name:'店员',dlg:['欢迎光临！需要买什么吗？'],shop:true},{x:20,y:7,name:'水手',dlg:['我在海滩深处看到过一只发蓝光的精灵...','全身都是冰晶，非常漂亮！'],sailor:true},{x:6,y:4,name:'训练家2',dlg:['我是港口训练家！要挑战我吗？'],battle:true,team:['015','016'],money:200}],items:[{x:3,y:14,type:'money',amount:120}],exits:[{x:0,y:7,to:'route1',tx:26,ty:7},{x:25,y:9,to:'route2',tx:0,ty:9}]},
+ 'route2':{w:28,h:14,name:'阳光海滩',wild:'beach',npcs:[{x:16,y:4,name:'训练家',dlg:['我是海滩训练家！要试试我的水系精灵吗？'],battle:true,team:['017','018'],money:180}],items:[{x:7,y:8,type:'money',amount:70},{x:20,y:11,type:'money',amount:90},{x:25,y:5,type:'great-ball',amount:1}],exits:[{x:0,y:9,to:'port-town',tx:24,ty:9},{x:27,y:7,to:'mine-town',tx:0,ty:7}]},
+ 'mine-town':{w:24,h:16,name:'矿山镇',npcs:[{x:10,y:12,name:'护士',dlg:['要治疗精灵吗？'],heal:true},{x:16,y:11,name:'高级店员',dlg:['这里卖更好的道具！'],shop2:true},{x:12,y:7,name:'道馆主',dlg:['我是矿山道馆的馆主！','敢来挑战吗？'],gym:true},{x:5,y:3,name:'训练家',dlg:['我是矿山训练家！我的岩石系精灵很强！'],battle:true,team:['022','011'],money:250}],items:[{x:20,y:5,type:'money',amount:150},{x:7,y:10,type:'super-potion',amount:1}],exits:[{x:0,y:7,to:'route2',tx:26,ty:7},{x:23,y:4,to:'cave',tx:0,ty:7}]},
+ 'cave':{w:23,h:14,name:'传说洞穴',npcs:[{x:11,y:7,name:'??',dlg:['你感觉到了强大的压迫感...','"星辉龙"就在这里！'],legendary:true}],items:[{x:5,y:3,type:'money',amount:300},{x:17,y:10,type:'money',amount:200}],exits:[{x:0,y:7,to:'mine-town',tx:22,ty:4}]}
+};
+
+// 生成地图瓦片
+Object.values(MAPS).forEach(m=>{
+ m.tiles=Array(m.w*m.h).fill(null).map((_,i)=>{
+  const x=i%m.w,y=Math.floor(i/m.w);
+  if(y===0||y===m.h-1||x===0||x===m.w-1)return{obstacle:true};
+  if(m.w>5&&x>3&&x<m.w-4&&y>3&&y<m.h-4&&Math.random()<0.08)return{obstacle:true};
+  return{obstacle:false};
+ });
+ if(m.npcs) m.npcs.forEach(n=>{const idx=n.y*m.w+n.x;if(m.tiles[idx])m.tiles[idx].obstacle=false;});
+ if(m.exits) m.exits.forEach(e=>{const idx=e.y*m.w+e.x;if(m.tiles[idx])m.tiles[idx].obstacle=false;});
+ if(m.items) m.items.forEach(it=>{const idx=it.y*m.w+it.x;if(m.tiles[idx])m.tiles[idx].obstacle=false;});
+});
+
+// 野生精灵生成
+const WILD_SPAWNS={
+ 'route1':{pokemon:['010','011','012','013','014'],positions:[{x:4,y:4},{x:8,y:5},{x:12,y:6},{x:16,y:4},{x:20,y:7},{x:6,y:9},{x:10,y:7},{x:14,y:5},{x:18,y:4},{x:22,y:5}]},
+ 'route2':{pokemon:['015','016','017','018','019','020'],positions:[{x:3,y:3},{x:7,y:4},{x:11,y:3},{x:15,y:5},{x:19,y:3},{x:5,y:7},{x:9,y:6},{x:13,y:5},{x:17,y:4},{x:21,y:3},{x:6,y:9},{x:12,y:8}]}
+};
+
+// =========== 游戏状态 ===========
+const state={
+ money:3000,
+ badges:0,
+ team:[],
+ storage:[],
+ bag:{pokeball:5,'great-ball':1,potion:3,'super-potion':1,'space-capsule':1},
+ seen:{},
+ caught:{},
+ scene:'world',
+ player:{x:12,y:14,dir:'down',anim:0},
+ currentMap:'start-town',
+ battle:null,
+ wildPokemon:[],
+ collectedItems:{},
+ battleResult:{exp:0,money:0},
+ currentNPC:null,
+ sailorTalked:false // 是否与水手对话过
+};
+
+// =========== 工具函数 ===========
+function random(min,max){return Math.floor(Math.random()*(max-min+1))+min}
+function calculateStats(species,level,ivs,evs){
+ const base=species.base;
+ const calc=(b,iv,ev,stat)=>{
+  if(stat==='hp') return Math.floor((2*b+iv+Math.floor(ev/4))*level/100)+level+10;
+  return Math.floor((2*b+iv+Math.floor(ev/4))*level/100)+5;
+ };
+ return{
+  hp:calc(base.hp,ivs.hp,evs.hp,'hp'),
+  atk:calc(base.atk,ivs.atk,evs.atk,'atk'),
+  def:calc(base.def,ivs.def,evs.def,'def'),
+  spa:calc(base.spa,ivs.spa,evs.spa,'spa'),
+  spd:calc(base.spd,ivs.spd,evs.spd,'spd'),
+  spe:calc(base.spe,ivs.spe,evs.spe,'spe')
+ };
+}
+
+function createPokemon(id,level=5){
+ const species=POKEDEX[id];
+ if(!species) return null;
+ 
+ const ivs={
+  hp:random(0,31),atk:random(0,31),def:random(0,31),
+  spa:random(0,31),spd:random(0,31),spe:random(0,31)
+ };
+ const evs={hp:0,atk:0,def:0,spa:0,spd:0,spe:0};
+ const stats=calculateStats(species,level,ivs,evs);
+ 
+ const moves=species.moves
+  .filter(m=>m.level<=level)
+  .map(m=>({
+   ...MOVES[m.move],
+   id:m.move,
+   pp:MOVES[m.move].pp,
+   maxPp:MOVES[m.move].pp
+  }));
+ 
+ return{
+  id:species.id,
+  name:species.name,
+  types:[...species.types],
+  level:level,
+  ivs:ivs,
+  evs:evs,
+  stats:stats,
+  hp:stats.hp,
+  maxHp:stats.hp,
+  moves:moves,
+  exp:0,
+  expToNext:level*level*10,
+  captureRate:species.captureRate||null
+ };
+}
+
+function typeMultiplier(attackType,defenseTypes){
+ let multiplier=1.0;
+ const chart=TYPE_CHART[attackType];
+ if(!chart) return 1.0;
+ 
+ defenseTypes.forEach(defType=>{
+  if(chart.immune&&chart.immune.includes(defType)) multiplier=0;
+  if(chart.strong&&chart.strong.includes(defType)) multiplier*=2;
+  if(chart.weak&&chart.weak.includes(defType)) multiplier*=0.5;
+ });
+ return multiplier;
+}
+
+function getTypeHex(type){return TYPE_HEX[type]||'#999';}
+
+// =========== 地图物品系统 ===========
+function checkMapItems(){
+ const map=MAPS[state.currentMap];
+ if(!map||!map.items) return;
+ 
+ const key=`${state.currentMap}_${state.player.x}_${state.player.y}`;
+ const item=map.items.find(it=>it.x===state.player.x&&it.y===state.player.y);
+ 
+ if(item&&!state.collectedItems[key]){
+  state.collectedItems[key]=true;
+  
+  switch(item.type){
+   case 'money':
+    state.money+=item.amount;
+    showItemGet('💰',`获得金币+${item.amount}`);
+    break;
+   case 'pokeball':
+    state.bag.pokeball=(state.bag.pokeball||0)+item.amount;
+    showItemGet('🔴',`获得精灵球x${item.amount}`);
+    break;
+   case 'great-ball':
+    state.bag['great-ball']=(state.bag['great-ball']||0)+item.amount;
+    showItemGet('🔵',`获得超级球x${item.amount}`);
+    break;
+   case 'potion':
+    state.bag.potion=(state.bag.potion||0)+item.amount;
+    showItemGet('💊',`获得伤药x${item.amount}`);
+    break;
+   case 'super-potion':
+    state.bag['super-potion']=(state.bag['super-potion']||0)+item.amount;
+    showItemGet('💊',`获得好伤药x${item.amount}`);
+    break;
+  }
+  render();
+ }
+}
+
+function showItemGet(icon,text){
+ const el=document.getElementById('item-get');
+ document.getElementById('item-icon').textContent=icon;
+ document.getElementById('item-text').textContent=text;
+ el.classList.add('active');
+ setTimeout(()=>el.classList.remove('active'),1500);
+}
+
+// =========== 精灵经验系统 ===========
+function giveExpToAll(expAmount){
+ state.team.forEach(pokemon=>{
+  pokemon.exp+=expAmount;
+  while(pokemon.exp>=pokemon.expToNext){
+   pokemon.level++;
+   pokemon.exp-=pokemon.expToNext;
+   pokemon.expToNext=pokemon.level*pokemon.level*10;
+   
+   const species=POKEDEX[pokemon.id];
+   const newStats=calculateStats(species,pokemon.level,pokemon.ivs,pokemon.evs);
+   const hpDiff=newStats.hp-pokemon.stats.hp;
+   pokemon.stats=newStats;
+   pokemon.maxHp=newStats.hp;
+   pokemon.hp+=hpDiff;
+   
+   pokemon.moves.forEach(move=>{
+    move.pp=move.maxPp;
+   });
+   
+   if(species.moves){
+    species.moves.forEach(m=>{
+     if(m.level===pokemon.level&&!pokemon.moves.find(pm=>pm.id===m.move)&&pokemon.moves.length<4){
+      pokemon.moves.push({
+       ...MOVES[m.move],
+       id:m.move,
+       pp:MOVES[m.move].pp,
+       maxPp:MOVES[m.move].pp
+      });
+     }
+    });
+   }
+   
+   if(species.evo&&pokemon.level>=species.evo.level){
+    const newSpecies=POKEDEX[species.evo.to];
+    if(newSpecies){
+     pokemon.id=newSpecies.id;
+     pokemon.name=newSpecies.name;
+     pokemon.types=[...newSpecies.types];
+     const evolvedStats=calculateStats(newSpecies,pokemon.level,pokemon.ivs,pokemon.evs);
+     const evolvedHpDiff=evolvedStats.hp-pokemon.stats.hp;
+     pokemon.stats=evolvedStats;
+     pokemon.maxHp=evolvedStats.hp;
+     pokemon.hp+=evolvedHpDiff;
+     
+     newSpecies.moves.forEach(m=>{
+      if(m.level<=pokemon.level&&!pokemon.moves.find(pm=>pm.id===m.move)&&pokemon.moves.length<4){
+       pokemon.moves.push({
+        ...MOVES[m.move],
+        id:m.move,
+        pp:MOVES[m.move].pp,
+        maxPp:MOVES[m.move].pp
+       });
+      }
+     });
+    }
+   }
+  }
+ });
+ 
+ state.storage.forEach(pokemon=>{
+  pokemon.exp+=Math.floor(expAmount*0.5);
+ });
+}
+
+// =========== 精灵存储系统 ===========
+function addToTeam(pokemon){
+ if(state.team.length<4){
+  state.team.push(pokemon);
+  return true;
+ }else if(state.bag['space-capsule']>0){
+  state.storage.push(pokemon);
+  showDialog(`${pokemon.name}已存入空间胶囊中！`);
+  return true;
+ }else{
+  showDialog('队伍已满且没有空间胶囊！');
+  return false;
+ }
+}
+
+// =========== 交互提示系统 ===========
+function updateInteractHint(){
+ const hintEl=document.getElementById('interact-hint');
+ const titleEl=document.getElementById('hint-title');
+ const textEl=document.getElementById('hint-text');
+ const map=MAPS[state.currentMap];
+ 
+ hintEl.classList.remove('active');
+ if(!map) return;
+ 
+ if(map.npcs){
+  const npc=map.npcs.find(n=>
+   Math.abs(n.x-state.player.x)<=1&&Math.abs(n.y-state.player.y)<=1
+  );
+  if(npc){
+   const npcInfo=NPC_ICONS[npc.name]||NPC_ICONS['老人'];
+   titleEl.textContent='可交互';
+   textEl.textContent=npcInfo.name||npc.name;
+   hintEl.classList.add('active');
+   return;
+  }
+ }
+ 
+ if(map.items){
+  const key=`${state.currentMap}_${state.player.x}_${state.player.y}`;
+  const item=map.items.find(it=>
+   it.x===state.player.x&&it.y===state.player.y&&!state.collectedItems[key]
+  );
+  if(item){
+   titleEl.textContent='可拾取';
+   const itemNames={money:'金币',pokeball:'精灵球','great-ball':'超级球',potion:'伤药','super-potion':'好伤药'};
+   textEl.textContent=itemNames[item.type]||'道具';
+   hintEl.classList.add('active');
+   return;
+  }
+ }
+ 
+ const wild=state.wildPokemon.find(p=>
+  Math.abs(p.x-state.player.x)<=1&&Math.abs(p.y-state.player.y)<=1
+ );
+ if(wild){
+  titleEl.textContent='野生精灵';
+  textEl.textContent=wild.species.name;
+  hintEl.classList.add('active');
+  return;
+ }
+}
+
+// =========== NPC立绘系统 ===========
+function showNPCPortrait(npcName){
+ const portraitEl=document.getElementById('npc-portrait');
+ const npcInfo=NPC_ICONS[npcName]||NPC_ICONS['老人'];
+ portraitEl.style.background=npcInfo.color;
+ portraitEl.textContent=npcInfo.icon;
+ portraitEl.classList.add('active');
+}
+
+function hideNPCPortrait(){
+ document.getElementById('npc-portrait').classList.remove('active');
+}
+
+// =========== 野生精灵系统 ===========
+function spawnWildPokemon(){
+ const spawnInfo=WILD_SPAWNS[state.currentMap];
+ if(!spawnInfo) return;
+ 
+ state.wildPokemon=[];
+ const spawnCount=random(3,5);
+ const availableSpots=[...spawnInfo.positions].sort(()=>Math.random()-0.5);
+ 
+ for(let i=0;i<Math.min(spawnCount,availableSpots.length);i++){
+  const spot=availableSpots[i];
+  const pokemonId=spawnInfo.pokemon[random(0,spawnInfo.pokemon.length-1)];
+  const species=POKEDEX[pokemonId];
+  
+  state.wildPokemon.push({
+   id:pokemonId,
+   x:spot.x,
+   y:spot.y,
+   species:species,
+   sprite:SPRITES[pokemonId],
+   moveTimer:0
+  });
+ }
+}
+
+function updateWildPokemon(){
+ state.wildPokemon.forEach(p=>{
+  p.moveTimer++;
+  if(p.moveTimer>60){
+   p.moveTimer=0;
+   const directions=['up','down','left','right'];
+   const dir=directions[random(0,3)];
+   let nx=p.x,ny=p.y;
+   
+   switch(dir){
+    case 'up':ny--;break;
+    case 'down':ny++;break;
+    case 'left':nx--;break;
+    case 'right':nx++;break;
+   }
+   
+   const map=MAPS[state.currentMap];
+   if(nx>=0&&nx<map.w&&ny>=0&&ny<map.h){
+    const idx=ny*map.w+nx;
+    if(!map.tiles[idx]||!map.tiles[idx].obstacle){
+     p.x=nx;
+     p.y=ny;
+    }
+   }
+  }
+ });
+}
+
+function checkWildEncounter(){
+ const playerX=state.player.x;
+ const playerY=state.player.y;
+ 
+ for(let i=state.wildPokemon.length-1;i>=0;i--){
+  const p=state.wildPokemon[i];
+  // 缩小判定范围：必须相邻（距离为1）
+  if(Math.abs(p.x-playerX)<=1&&Math.abs(p.y-playerY)<=1){
+   const level=random(2,6)+state.badges*3;
+   const wild=createPokemon(p.id,level);
+   state.wildPokemon.splice(i,1);
+   startBattle(wild);
+   return true;
+  }
+ }
+ return false;
+}
+
+// =========== 画布系统 ===========
+const canvas=document.getElementById('canvas');
+const ctx=canvas.getContext('2d');
+let W,H,TILE_SIZE=48;
+
+function resize(){
+ W=canvas.width=window.innerWidth;
+ H=canvas.height=window.innerHeight;
+ TILE_SIZE=Math.min(
+  W/(MAPS[state.currentMap].w+1),
+  H/(MAPS[state.currentMap].h+1),
+  56
+ );
+}
+window.addEventListener('resize',()=>{resize();render();});
+resize();
+
+const MAP_COLORS={
+ 'start-town':{bg:'#7BC950',tree:'#3A7D44'},
+ 'route1':{bg:'#5A9E4B',tree:'#2E6B33'},
+ 'port-town':{bg:'#DEB887',tree:'#7BA05B'},
+ 'route2':{bg:'#FFD8B1',tree:'#7BA05B'},
+ 'mine-town':{bg:'#8B7355',tree:'#4A6B3A'},
+ 'cave':{bg:'#333333',tree:'#555555'}
+};
+
+function getMapColors(mapName){
+ return MAP_COLORS[mapName]||{bg:'#7BC950',tree:'#3A7D44'};
+}
+
+function render(){
+ ctx.clearRect(0,0,W,H);
+ if(state.scene==='world') renderWorld();
+ else if(state.scene==='battle') renderBattle();
+}
+
+function renderWorld(){
+ const map=MAPS[state.currentMap];
+ if(!map) return;
+ 
+ const offsetX=W/2-state.player.x*TILE_SIZE-TILE_SIZE/2;
+ const offsetY=H/2-state.player.y*TILE_SIZE-TILE_SIZE/2;
+ const colors=getMapColors(state.currentMap);
+ 
+ document.getElementById('map-name').textContent=map.name;
+ 
+ ctx.fillStyle=colors.bg;
+ ctx.fillRect(0,0,W,H);
+ 
+ for(let y=0;y<map.h;y++){
+  for(let x=0;x<map.w;x++){
+   const idx=y*map.w+x;
+   const tile=map.tiles[idx];
+   const tx=offsetX+x*TILE_SIZE,ty=offsetY+y*TILE_SIZE;
+   
+   if(tile&&tile.obstacle){
+    ctx.fillStyle=colors.tree;
+    ctx.fillRect(tx+TILE_SIZE/4,ty+TILE_SIZE/2,TILE_SIZE/2,TILE_SIZE/2);
+    ctx.beginPath();
+    ctx.arc(tx+TILE_SIZE/2,ty+TILE_SIZE/3,TILE_SIZE/3,0,Math.PI*2);
+    ctx.fillStyle='#2E6B33';
+    ctx.fill();
+   }else{
+    ctx.fillStyle=colors.bg;
+    ctx.fillRect(tx,ty,TILE_SIZE,TILE_SIZE);
+    ctx.strokeStyle='rgba(255,255,255,0.05)';
+    ctx.lineWidth=1;
+    ctx.strokeRect(tx,ty,TILE_SIZE,TILE_SIZE);
+   }
+  }
+ }
+ 
+ // 绘制出口
+ if(map.exits) map.exits.forEach(e=>{
+  const ex=offsetX+e.x*TILE_SIZE,ey=offsetY+e.y*TILE_SIZE;
+  ctx.fillStyle='rgba(212,165,116,0.8)';
+  ctx.fillRect(ex,ey,TILE_SIZE,TILE_SIZE);
+  ctx.fillStyle='rgba(255,255,255,0.6)';
+  ctx.beginPath();
+  ctx.moveTo(ex+TILE_SIZE/2,ey+TILE_SIZE/4);
+  ctx.lineTo(ex+TILE_SIZE/4,ey+TILE_SIZE*3/4);
+  ctx.lineTo(ex+TILE_SIZE*3/4,ey+TILE_SIZE*3/4);
+  ctx.closePath();
+  ctx.fill();
+  
+  // 闪光指引：水手对话后，route2的出口显示闪光
+  if(state.sailorTalked&&state.currentMap==='route2'&&e.to==='mine-town'){
+   const glow=Math.sin(Date.now()/300)*0.3+0.7;
+   ctx.strokeStyle=`rgba(144,224,239,${glow})`;
+   ctx.lineWidth=3;
+   ctx.strokeRect(ex-2,ey-2,TILE_SIZE+4,TILE_SIZE+4);
+   ctx.fillStyle=`rgba(144,224,239,${glow*0.3})`;
+   ctx.fillRect(ex-2,ey-2,TILE_SIZE+4,TILE_SIZE+4);
+  }
+ });
+ 
+ // 绘制物品
+ if(map.items) map.items.forEach(it=>{
+  const key=`${state.currentMap}_${it.x}_${it.y}`;
+  if(state.collectedItems[key]) return;
+  
+  const ix=offsetX+it.x*TILE_SIZE+TILE_SIZE/2;
+  const iy=offsetY+it.y*TILE_SIZE+TILE_SIZE/2;
+  const pulse=Math.sin(Date.now()/500)*0.2+0.8;
+  const size=TILE_SIZE/3*pulse;
+  
+  ctx.beginPath();
+  ctx.arc(ix,iy+2,size*0.8,0,Math.PI*2);
+  ctx.fillStyle='rgba(0,0,0,0.2)';
+  ctx.fill();
+  
+  ctx.beginPath();
+  ctx.arc(ix,iy,size,0,Math.PI*2);
+  ctx.fillStyle=it.type==='money'?'#f7b731':'#EF476F';
+  ctx.fill();
+  
+  ctx.fillStyle='#fff';
+  ctx.font=`bold ${size*0.6}px sans-serif`;
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  const icon={money:'💰',pokeball:'🔴','great-ball':'🔵',potion:'💊','super-potion':'💊'}[it.type]||'❓';
+  ctx.fillText(icon,ix,iy);
+ });
+ 
+ // 绘制野生精灵
+ state.wildPokemon.forEach(p=>{
+  const wx=offsetX+p.x*TILE_SIZE+TILE_SIZE/2;
+  const wy=offsetY+p.y*TILE_SIZE+TILE_SIZE/2;
+  const pulse=Math.sin(Date.now()/500+p.x*10)*0.1+0.9;
+  const size=TILE_SIZE/2*pulse;
+  
+  ctx.beginPath();
+  ctx.arc(wx,wy+2,size*0.8,0,Math.PI*2);
+  ctx.fillStyle='rgba(0,0,0,0.2)';
+  ctx.fill();
+  
+  ctx.beginPath();
+  ctx.arc(wx,wy,size,0,Math.PI*2);
+  ctx.fillStyle=p.sprite.color;
+  ctx.fill();
+  
+  ctx.fillStyle='#fff';
+  ctx.font=`bold ${size*0.6}px sans-serif`;
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText(p.sprite.icon,wx,wy);
+  
+  // 精灵名称
+  ctx.font='bold 10px sans-serif';
+  ctx.fillStyle='rgba(255,255,255,0.9)';
+  ctx.fillText(p.species.name,wx,wy-size-5);
+ });
+ 
+ // 绘制NPC
+ if(map.npcs) map.npcs.forEach(n=>{
+  const nx=offsetX+n.x*TILE_SIZE+TILE_SIZE/2;
+  const ny=offsetY+n.y*TILE_SIZE+TILE_SIZE/2;
+  const npcInfo=NPC_ICONS[n.name]||NPC_ICONS['老人'];
+  
+  ctx.beginPath();
+  ctx.arc(nx,ny+3,TILE_SIZE/3,0,Math.PI*2);
+  ctx.fillStyle='rgba(0,0,0,0.3)';
+  ctx.fill();
+  
+  ctx.beginPath();
+  ctx.arc(nx,ny,TILE_SIZE/3,0,Math.PI*2);
+  ctx.fillStyle=npcInfo.color;
+  ctx.fill();
+  
+  ctx.fillStyle='#fff';
+  ctx.font=`bold ${TILE_SIZE/4}px sans-serif`;
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText(npcInfo.icon,nx,ny);
+  
+  // NPC名称
+  const nameWidth=ctx.measureText(npcInfo.name||n.name).width+10;
+  ctx.fillStyle='rgba(0,0,0,0.7)';
+  ctx.fillRect(nx-nameWidth/2,ny-TILE_SIZE/2-15,nameWidth,14);
+  ctx.fillStyle='#fff';
+  ctx.font='bold 10px sans-serif';
+  ctx.fillText(npcInfo.name||n.name,nx,ny-TILE_SIZE/2-7);
+ });
+ 
+ // 绘制玩家
+ const px=offsetX+state.player.x*TILE_SIZE+TILE_SIZE/2;
+ const py=offsetY+state.player.y*TILE_SIZE+TILE_SIZE/2+Math.sin(state.player.anim||0)*3;
+ 
+ ctx.beginPath();
+ ctx.arc(px,py+4,TILE_SIZE/2.5,0,Math.PI*2);
+ ctx.fillStyle='rgba(0,0,0,0.3)';
+ ctx.fill();
+ 
+ ctx.beginPath();
+ ctx.arc(px,py,TILE_SIZE/2.5,0,Math.PI*2);
+ ctx.fillStyle='#EF476F';
+ ctx.fill();
+ 
+ ctx.beginPath();
+ ctx.arc(px,py,TILE_SIZE/6,0,Math.PI*2);
+ ctx.fillStyle='#fff';
+ ctx.fill();
+ 
+ const dirOffset={
+  up:{x:0,y:-TILE_SIZE/3},
+  down:{x:0,y:TILE_SIZE/3},
+  left:{x:-TILE_SIZE/3,y:0},
+  right:{x:TILE_SIZE/3,y:0}
+ }[state.player.dir];
+ ctx.beginPath();
+ ctx.arc(px+dirOffset.x,py+dirOffset.y,TILE_SIZE/10,0,Math.PI*2);
+ ctx.fillStyle='#06D6A0';
+ ctx.fill();
+}
+
+function renderBattle(){
+ const gradient=ctx.createLinearGradient(0,0,0,H*0.6);
+ gradient.addColorStop(0,'#1a1a2e');
+ gradient.addColorStop(1,'#4a69bd');
+ ctx.fillStyle=gradient;
+ ctx.fillRect(0,0,W,H*0.6);
+ 
+ ctx.fillStyle='#2d5016';
+ ctx.fillRect(0,H*0.6,W,H*0.4);
+ ctx.fillStyle='#3a6b20';
+ ctx.fillRect(0,H*0.6,W,4);
+ 
+ const battle=state.battle;
+ if(!battle) return;
+ 
+ const enemySprite=SPRITES[battle.enemy.id]||SPRITES['010'];
+ ctx.fillStyle='rgba(255,255,255,0.1)';
+ ctx.beginPath();
+ ctx.arc(W-60,H*0.4,50,0,Math.PI*2);
+ ctx.fill();
+ ctx.beginPath();
+ ctx.arc(W-60,H*0.4,40,0,Math.PI*2);
+ ctx.fillStyle=enemySprite.color;
+ ctx.fill();
+ ctx.fillStyle='#fff';
+ ctx.font='bold 32px sans-serif';
+ ctx.textAlign='center';
+ ctx.textBaseline='middle';
+ ctx.fillText(enemySprite.icon,W-60,H*0.4);
+ 
+ const playerSprite=SPRITES[battle.player.id]||SPRITES['001'];
+ ctx.fillStyle='rgba(255,255,255,0.1)';
+ ctx.beginPath();
+ ctx.arc(60,H*0.65,50,0,Math.PI*2);
+ ctx.fill();
+ ctx.beginPath();
+ ctx.arc(60,H*0.65,40,0,Math.PI*2);
+ ctx.fillStyle=playerSprite.color;
+ ctx.fill();
+ ctx.fillStyle='#fff';
+ ctx.font='bold 32px sans-serif';
+ ctx.textAlign='center';
+ ctx.textBaseline='middle';
+ ctx.fillText(playerSprite.icon,60,H*0.65);
+}
+
+// =========== 输入控制 ===========
+canvas.addEventListener('click',e=>{
+ if(state.scene==='world'){
+  const map=MAPS[state.currentMap];
+  const offsetX=W/2-state.player.x*TILE_SIZE-TILE_SIZE/2;
+  const offsetY=H/2-state.player.y*TILE_SIZE-TILE_SIZE/2;
+  const tileX=Math.floor((e.clientX-offsetX)/TILE_SIZE);
+  const tileY=Math.floor((e.clientY-offsetY)/TILE_SIZE);
+  
+  if(map&&map.npcs){
+   const npc=map.npcs.find(n=>
+    Math.abs(n.x-tileX)<=1&&Math.abs(n.y-tileY)<=1
+   );
+   if(npc) interactNPC(npc);
+  }
+ }
+});
+
+let touchStart=null;
+canvas.addEventListener('touchstart',e=>{
+ touchStart={x:e.touches[0].clientX,y:e.touches[0].clientY};
+});
+canvas.addEventListener('touchend',e=>{
+ if(!touchStart) return;
+ const dx=e.changedTouches[0].clientX-touchStart.x;
+ const dy=e.changedTouches[0].clientY-touchStart.y;
+ if(Math.abs(dx)>Math.abs(dy)){
+  movePlayer(dx>0?'right':'left');
+ }else{
+  movePlayer(dy>0?'down':'up');
+ }
+ touchStart=null;
+});
+
+document.addEventListener('keydown',e=>{
+ if(state.scene==='world'){
+  const mapping={
+   ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',
+   w:'up',a:'left',s:'down',d:'right'
+  }[e.key];
+  if(mapping) movePlayer(mapping);
+  else if(e.key===' '||e.key==='Enter') interact();
+  else if(e.key==='t'||e.key==='T') openTeamMenu();
+  else if(e.key==='b'||e.key==='B') openBagMenu();
+  else if(e.key==='p'||e.key==='P') openPokedex();
+ }
+});
+
+function movePlayer(direction){
+ const map=MAPS[state.currentMap];
+ let newX=state.player.x,newY=state.player.y;
+ state.player.dir=direction;
+ 
+ switch(direction){
+  case 'up':newY--;break;
+  case 'down':newY++;break;
+  case 'left':newX--;break;
+  case 'right':newX++;break;
+ }
+ 
+ if(newX<0||newX>=map.w||newY<0||newY>=map.h) return;
+ const idx=newY*map.w+newX;
+ if(map.tiles[idx]&&map.tiles[idx].obstacle) return;
+ 
+ state.player.x=newX;
+ state.player.y=newY;
+ state.player.anim=(state.player.anim||0)+0.5;
+ 
+ if(map.exits){
+  const exit=map.exits.find(e=>e.x===newX&&e.y===newY);
+  if(exit){
+   state.currentMap=exit.to;
+   state.player.x=exit.tx;
+   state.player.y=exit.ty;
+   spawnWildPokemon();
+  }
+ }
+ 
+ checkMapItems();
+ updateWildPokemon();
+ 
+ if(!checkWildEncounter()){
+  updateInteractHint();
+  render();
+ }
+}
+
+function interact(){
+ const map=MAPS[state.currentMap];
+ if(!map||!map.npcs) return;
+ 
+ const player=state.player;
+ const checkPositions={
+  up:{x:player.x,y:player.y-1},
+  down:{x:player.x,y:player.y+1},
+  left:{x:player.x-1,y:player.y},
+  right:{x:player.x+1,y:player.y}
+ };
+ const pos=checkPositions[player.dir];
+ const npc=map.npcs.find(n=>n.x===pos.x&&n.y===pos.y);
+ 
+ if(npc) interactNPC(npc);
+ updateInteractHint();
+ render();
+}
+
+function interactNPC(npc){
+ state.currentNPC=npc;
+ showNPCPortrait(npc.name);
+ 
+ if(npc.heal){
+  showChoices(`护士：要治疗你的精灵吗？（免费）`,[
+   {text:'是的',action:()=>{
+    state.team.forEach(p=>{
+     p.hp=p.maxHp;
+     p.moves.forEach(move=>{move.pp=move.maxPp;});
+    });
+    hideNPCPortrait();
+    showDialog('全部精灵已恢复健康！PP也已完全恢复！');
+   }},
+   {text:'不用了',action:()=>{hideNPCPortrait();}}
+  ]);
+ }else if(npc.shop){
+  showShop([
+   {id:'pokeball',name:'精灵球',price:200,desc:'捕捉野生精灵'},
+   {id:'potion',name:'伤药',price:300,desc:'恢复20HP'}
+  ]);
+ }else if(npc.shop2){
+  showShop([
+   {id:'great-ball',name:'超级球',price:600,desc:'更好的捕捉球'},
+   {id:'super-potion',name:'好伤药',price:700,desc:'恢复50HP'},
+   {id:'space-capsule',name:'空间胶囊',price:1000,desc:'存储多余精灵'}
+  ]);
+ }else if(npc.gym){
+  if(!state.team.length){
+   hideNPCPortrait();
+   showDialog('你需要先有精灵！');
+   return;
+  }
+  showChoices('道馆训练家向你发起挑战！',[
+   {text:'迎战',action:()=>{hideNPCPortrait();startGym();}},
+   {text:'先看看',action:()=>{hideNPCPortrait();}}
+  ]);
+ }else if(npc.battle){
+  showChoices(`${npc.name}：要和我对战吗？`,[
+   {text:'对战',action:()=>{hideNPCPortrait();startTrainerBattle(npc);}},
+   {text:'下次吧',action:()=>{hideNPCPortrait();}}
+  ]);
+ }else if(npc.legendary){
+  const legendary=createPokemon('999',20);
+  hideNPCPortrait();
+  startBattle(legendary,{legendary:true});
+ }else if(npc.sailor){
+  // 水手对话：触发冰系精灵指引
+  state.sailorTalked=true;
+  showDialog(npc.dlg[0],()=>{
+   showDialog(npc.dlg[1],()=>{
+    showDialog('阳光海滩的出口出现了神秘的闪光...',hideNPCPortrait);
+   });
+  });
+ }else if(npc.dlg){
+  showDialog(npc.dlg[0],()=>{
+   if(npc.dlg.length>1) showDialog(npc.dlg[1],hideNPCPortrait);
+   else hideNPCPortrait();
+  });
+ }
+}
+
+function startTrainerBattle(npc){
+ const team=npc.team.map(id=>createPokemon(id,5+state.badges*2));
+ const battle={
+  player:state.team[0],
+  enemy:team[0],
+  trainer:true,
+  trainerName:npc.name,
+  trainerTeam:team,
+  trainerIndex:0,
+  trainerMoney:npc.money||100,
+  playerHP:state.team[0].hp,
+  maxPlayerHP:state.team[0].maxHp,
+  enemyHP:team[0].hp,
+  maxEnemyHP:team[0].maxHp,
+  log:[]
+ };
+ state.battle=battle;
+ state.scene='battle';
+ document.getElementById('quick-bar').classList.add('battle-hidden');
+ document.getElementById('battle-hud').classList.add('active');
+ document.getElementById('message-box').classList.add('active');
+ setMsg(`${npc.name}派出了${team[0].name}！`);
+ updateBattleUI();
+ render();
+}
+
+function startGym(){
+ const team=[createPokemon('022',8),createPokemon('021',8),createPokemon('023',10)];
+ state.battle={
+  player:state.team[0],
+  enemy:team[0],
+  gym:true,
+  gymTeam:team,
+  gymIndex:0,
+  playerHP:state.team[0].hp,
+  maxPlayerHP:state.team[0].maxHp,
+  enemyHP:team[0].hp,
+  maxEnemyHP:team[0].maxHp,
+  log:[]
+ };
+ state.scene='battle';
+ document.getElementById('quick-bar').classList.add('battle-hidden');
+ document.getElementById('battle-hud').classList.add('active');
+ document.getElementById('message-box').classList.add('active');
+ setMsg(`道馆训练家派出了${team[0].name}！`);
+ updateBattleUI();
+ render();
+}
+
+function startBattle(wild,options={}){
+ options.wild=wild;
+ state.battle={
+  player:state.team[0],
+  enemy:wild,
+  playerHP:state.team[0].hp,
+  maxPlayerHP:state.team[0].maxHp,
+  enemyHP:wild.hp,
+  maxEnemyHP:wild.maxHp,
+  log:[],
+  ...options
+ };
+ state.scene='battle';
+ document.getElementById('quick-bar').classList.add('battle-hidden');
+ document.getElementById('battle-hud').classList.add('active');
+ document.getElementById('message-box').classList.add('active');
+ setMsg(
+  options.legendary?'传说中的精灵「星辉龙」出现了！':
+  options.gym?`道馆训练家派出了${wild.name}！`:
+  `野生的${wild.name}出现了！`
+ );
+ updateBattleUI();
+ render();
+}
+
+// =========== 对话框系统 ===========
+function showDialog(text,callback){
+ const dialog=document.getElementById('dialog');
+ document.getElementById('dialog-text').innerHTML=text;
+ const choices=document.getElementById('dialog-choices');
+ choices.innerHTML='';
+ const button=document.createElement('button');
+ button.className='btn';
+ button.textContent='继续';
+ button.onclick=()=>{
+  dialog.classList.remove('active');
+  if(callback) callback();
+ };
+ choices.appendChild(button);
+ dialog.classList.add('active');
+}
+
+function showChoices(text,choiceList){
+ const dialog=document.getElementById('dialog');
+ document.getElementById('dialog-text').innerHTML=text;
+ const choices=document.getElementById('dialog-choices');
+ choices.innerHTML='';
+ choiceList.forEach(choice=>{
+  const button=document.createElement('button');
+  button.className='btn';
+  button.textContent=choice.text;
+  button.onclick=()=>{
+   dialog.classList.remove('active');
+   choice.action();
+  };
+  choices.appendChild(button);
+ });
+ dialog.classList.add('active');
+}
+
+function setMsg(text){
+ document.getElementById('msg-text').textContent=text;
+ document.getElementById('battle-result').style.display='none';
+}
+
+function showShop(items){
+ const choices=items.map(item=>({
+  text:`${item.name} - ${item.price}金币 (${item.desc})`,
+  action:()=>{
+   if(state.money<item.price){
+    showDialog('金币不够！');
+    return;
+   }
+   state.money-=item.price;
+   state.bag[item.id]=(state.bag[item.id]||0)+1;
+   showDialog(`购买了${item.name}！剩余：${state.money}G`,()=>showShop(items));
+  }
+ }));
+ choices.push({text:'离开商店',action:()=>{hideNPCPortrait();}});
+ showChoices(`店员：欢迎光临！金币：<b style="color:#f7b731">${state.money}G</b>`,choices);
+}
+
+// =========== 菜单系统 ===========
+function openTeamMenu(){
+ const items=state.team.map((p,index)=>{
+  const sprite=SPRITES[p.id]||SPRITES['001'];
+  const hpPercent=Math.round(p.hp/p.maxHp*100);
+  return{
+   html:`<div style="display:flex;align-items:center;gap:10px">
+     <div style="width:48px;height:48px;border-radius:50%;background:${sprite.color};display:flex;align-items:center;justify-content:center;font-size:24px">${sprite.icon}</div>
+     <div style="flex:1">
+      <div style="font-weight:700">${p.name}</div>
+      <div>${p.types.map(t=>`<span class="type-badge ${TYPE_COLORS[t]}">${t}</span>`).join(' ')}</div>
+      <div class="hp-mini"><div class="hp-mini-fill${hpPercent<25?' low':''}" style="width:${hpPercent}%"></div></div>
+      <div style="font-size:.7rem;color:var(--text-dim)">Lv.${p.level} | ${p.hp}/${p.maxHp}</div>
+     </div>
+    </div>`,
+   onClick:()=>{showPokemonDetail(p,index);}
+  };
+ });
+ 
+ if(items.length===0){
+  items.push({html:'<div style="text-align:center;padding:20px;color:var(--text-dim)">队伍是空的</div>'});
+ }
+ 
+ renderMenu('精灵队伍',items);
+}
+
+function showPokemonDetail(pokemon,index){
+ const sprite=SPRITES[pokemon.id]||SPRITES['001'];
+ const detail=`
+  <div class="pokemon-detail active">
+   <div class="detail-header">
+    <div class="detail-sprite" style="background:${sprite.color}">${sprite.icon}</div>
+    <div class="detail-name">${pokemon.name}</div>
+    <div class="detail-level">Lv.${pokemon.level} | 经验:${pokemon.exp}/${pokemon.expToNext}</div>
+    <div style="margin-top:8px">${pokemon.types.map(t=>`<span class="type-badge ${TYPE_COLORS[t]}">${t}</span>`).join(' ')}</div>
+   </div>
+   <div class="stats-grid">
+    <div class="stat-item"><div class="stat-label">HP</div><div class="stat-value">${pokemon.stats.hp}</div></div>
+    <div class="stat-item"><div class="stat-label">攻击</div><div class="stat-value">${pokemon.stats.atk}</div></div>
+    <div class="stat-item"><div class="stat-label">防御</div><div class="stat-value">${pokemon.stats.def}</div></div>
+    <div class="stat-item"><div class="stat-label">特攻</div><div class="stat-value">${pokemon.stats.spa}</div></div>
+    <div class="stat-item"><div class="stat-label">特防</div><div class="stat-value">${pokemon.stats.spd}</div></div>
+    <div class="stat-item"><div class="stat-label">速度</div><div class="stat-value">${pokemon.stats.spe}</div></div>
+   </div>
+   <h3>技能</h3>
+   <div style="display:grid;gap:6px">
+    ${pokemon.moves.map(move=>`
+     <div style="background:rgba(255,255,255,.05);padding:8px;border-radius:6px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+       <div>
+        <div style="font-weight:600">${move.name}</div>
+        <div style="font-size:.7rem;color:var(--text-dim)">PP ${move.pp}/${move.maxPp}</div>
+       </div>
+       <span class="type-badge ${TYPE_COLORS[move.type]}">${move.type}</span>
+      </div>
+     </div>
+    `).join('')}
+   </div>
+  </div>
+ `;
+ 
+ document.getElementById('pokemon-detail').innerHTML=detail;
+ document.getElementById('panel-team').classList.remove('active');
+ document.getElementById('panel-pokemon').classList.add('active');
+}
+
+function openBagMenu(){
+ const items=[
+  {html:`<div><b>精灵球</b> x${state.bag.pokeball||0}</div><div style="font-size:.7rem;color:var(--text-dim)">捕捉野生精灵</div>`},
+  {html:`<div><b>超级球</b> x${state.bag['great-ball']||0}</div><div style="font-size:.7rem;color:var(--text-dim)">更好的捕捉球</div>`},
+  {html:`<div><b>伤药</b> x${state.bag.potion||0}</div><div style="font-size:.7rem;color:var(--text-dim)">恢复20HP</div>`},
+  {html:`<div><b>好伤药</b> x${state.bag['super-potion']||0}</div><div style="font-size:.7rem;color:var(--text-dim)">恢复50HP</div>`},
+  {html:`<div><b>空间胶囊</b> x${state.bag['space-capsule']||0}</div><div style="font-size:.7rem;color:var(--text-dim)">存储多余精灵</div>`},
+  {html:`<div><b>徽章</b> x${state.badges}</div><div style="font-size:.7rem;color:var(--text-dim)">道馆徽章</div>`}
+ ];
+ renderMenu(`背包 - <span style="color:#f7b731">${state.money}G</span>`,items);
+}
+
+function openPokedex(){
+ const pokedexList=document.getElementById('pokedex-list');
+ pokedexList.innerHTML='';
+ 
+ Object.values(POKEDEX).forEach(species=>{
+  const sprite=SPRITES[species.id]||SPRITES['001'];
+  const seen=state.seen[species.id];
+  const caught=state.caught[species.id];
+  
+  if((species.rarity==='rare'||species.rarity==='legendary')&&!seen){
+   return;
+  }
+  
+  const item=document.createElement('div');
+  item.className=`pokedex-item ${seen?'seen':''} ${caught?'caught':''}`;
+  
+  if(seen){
+   item.innerHTML=`
+    <div class="pokedex-icon" style="background:${sprite.color}">${sprite.icon}</div>
+    <div class="pokedex-name">${species.name}</div>
+    <div class="pokedex-types">${species.types.join('/')}</div>
+    <div style="font-size:.6rem;color:var(--text-dim)">${caught?'已捕捉':'已遇见'}</div>
+   `;
+   item.onclick=()=>{
+    showDialog(`
+     <div style="text-align:center">
+      <div style="width:80px;height:80px;border-radius:50%;background:${sprite.color};display:inline-flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:10px">
+       ${sprite.icon}
+      </div>
+      <div style="font-weight:700;font-size:1.2rem">${species.name}</div>
+      <div style="margin:8px 0">${species.types.map(t=>`<span class="type-badge ${TYPE_COLORS[t]}">${t}</span>`).join(' ')}</div>
+      <div style="font-size:.9rem;line-height:1.4">${species.desc}</div>
+      <div style="margin-top:12px;font-size:.8rem;color:var(--text-dim)">
+       HP:${species.base.hp} ATK:${species.base.atk} DEF:${species.base.def}<br>
+       SPA:${species.base.spa} SPD:${species.base.spd} SPE:${species.base.spe}
+      </div>
+     </div>
+    `);
+   };
+  }else{
+   item.innerHTML=`
+    <div class="pokedex-icon pokedex-unknown" style="background:#333">❓</div>
+    <div class="pokedex-name">???</div>
+    <div class="pokedex-types">???</div>
+   `;
+  }
+  
+  pokedexList.appendChild(item);
+ });
+ 
+ document.getElementById('panel-pokedex').classList.add('active');
+}
+
+function renderMenu(title,items){
+ const list=document.getElementById('team-list');
+ list.innerHTML='';
+ items.forEach(item=>{
+  const div=document.createElement('div');
+  div.className='panel-item';
+  div.innerHTML=item.html||item.label||'';
+  if(item.onClick) div.onclick=item.onClick;
+  list.appendChild(div);
+ });
+ 
+ if(title.includes('精灵队伍')){
+  document.getElementById('panel-team').classList.add('active');
+ }else if(title.includes('背包')){
+  document.getElementById('panel-bag').classList.add('active');
+ }
+}
+
+// =========== 初始精灵选择 ===========
+function showStarterSelect(){
+ const list=document.getElementById('starter-list');
+ const starters=['001','004','007'];
+ list.innerHTML='';
+ 
+ starters.forEach(id=>{
+  const species=POKEDEX[id];
+  const sprite=SPRITES[id];
+  const div=document.createElement('div');
+  div.className='panel-item';
+  div.innerHTML=`
+   <div style="width:60px;height:60px;border-radius:50%;background:${sprite.color};display:flex;align-items:center;justify-content:center;font-size:28px">
+    ${sprite.icon}
+   </div>
+   <div style="flex:1">
+    <div style="font-weight:700;font-size:1.1rem">${species.name}</div>
+    <div style="display:flex;gap:4px;margin:4px 0">
+     ${species.types.map(t=>`<span class="type-badge ${TYPE_COLORS[t]}">${t}</span>`).join('')}
+    </div>
+    <div style="font-size:.8rem;color:var(--text-dim);line-height:1.4">${species.desc}</div>
+    <div style="margin-top:6px;font-size:.75rem">
+     <div>HP: ${species.base.hp} | ATK: ${species.base.atk} | DEF: ${species.base.def}</div>
+     <div>SPA: ${species.base.spa} | SPD: ${species.base.spd} | SPE: ${species.base.spe}</div>
+    </div>
+   </div>
+  `;
+  div.onclick=()=>{
+   list.querySelectorAll('.panel-item').forEach(i=>{
+    i.style.border='none';
+    i.style.background='none';
+   });
+   div.style.border='2px solid var(--accent)';
+   div.style.background='rgba(247,37,133,0.1)';
+   div.dataset.selected=id;
+  };
+  list.appendChild(div);
+ });
+ 
+ document.getElementById('panel-starter').classList.add('active');
+ document.getElementById('btn-confirm').onclick=()=>{
+  const selected=list.querySelector('[data-selected]');
+  if(!selected) return;
+  const id=selected.dataset.selected;
+  const pokemon=createPokemon(id,5);
+  state.team=[pokemon];
+  state.seen[id]=true;
+  state.caught[id]=true;
+  document.getElementById('panel-starter').classList.remove('active');
+  const sprite=SPRITES[id];
+  showDialog(`
+   <div style="text-align:center">
+    <div style="width:80px;height:80px;border-radius:50%;background:${sprite.color};display:inline-flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:10px">
+     ${sprite.icon}
+    </div>
+    <div style="font-weight:700;font-size:1.2rem">你选择了${pokemon.name}！</div>
+    <div style="margin-top:8px">你的冒险开始了！</div>
+   </div>
+  `);
+  spawnWildPokemon();
+ };
+}
+
+// =========== 战斗系统 ===========
+function updateBattleUI(){
+ const battle=state.battle;
+ if(!battle) return;
+ 
+ const playerSprite=SPRITES[battle.player.id]||SPRITES['001'];
+ const enemySprite=SPRITES[battle.enemy.id]||SPRITES['010'];
+ 
+ document.getElementById('p-info').innerHTML=`
+  <div style="display:flex;align-items:center;gap:8px">
+   <div style="width:32px;height:32px;border-radius:50%;background:${playerSprite.color};display:flex;align-items:center;justify-content:center;font-size:18px">
+    ${playerSprite.icon}
+   </div>
+   <div style="flex:1">
+    <div class="name">${battle.player.name}</div>
+    <div class="level">Lv.${battle.player.level}</div>
+    <div class="hp-bar">
+     <div class="hp-fill${battle.playerHP/battle.maxPlayerHP<0.25?' low':''}" style="width:${Math.round(battle.playerHP/battle.maxPlayerHP*100)}%"></div>
+    </div>
+    <div style="font-size:.65rem;color:var(--text-dim)">${battle.playerHP}/${battle.maxPlayerHP}</div>
+   </div>
+  </div>
+ `;
+ 
+ document.getElementById('e-info').innerHTML=`
+  <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
+   <div style="flex:1;text-align:right">
+    <div class="name">${battle.enemy.name}</div>
+    <div class="level">Lv.${battle.enemy.level}</div>
+    <div class="hp-bar">
+     <div class="hp-fill${battle.enemyHP/battle.maxEnemyHP<0.25?' low':''}" style="width:${Math.round(battle.enemyHP/battle.maxEnemyHP*100)}%"></div>
+    </div>
+   </div>
+   <div style="width:32px;height:32px;border-radius:50%;background:${enemySprite.color};display:flex;align-items:center;justify-content:center;font-size:18px">
+    ${enemySprite.icon}
+   </div>
+  </div>
+ `;
+ 
+ document.getElementById('battle-menu').classList.remove('hidden');
+ document.getElementById('battle-actions').classList.add('hidden');
+ document.getElementById('switch-menu').classList.add('hidden');
+ 
+ document.getElementById('btn-fight').onclick=()=>{
+  document.getElementById('battle-menu').classList.add('hidden');
+  document.getElementById('battle-actions').classList.remove('hidden');
+  showMoves();
+ };
+ 
+ document.getElementById('btn-switch').onclick=()=>{
+  document.getElementById('battle-menu').classList.add('hidden');
+  document.getElementById('switch-menu').classList.remove('hidden');
+  showSwitchMenu();
+ };
+ 
+ document.getElementById('btn-bag-battle').onclick=()=>{useItem();};
+ document.getElementById('btn-run').onclick=()=>{tryRun();};
+}
+
+function showMoves(){
+ const battle=state.battle;
+ const actions=document.getElementById('battle-actions');
+ actions.innerHTML='';
+ 
+ battle.player.moves.forEach((move,index)=>{
+  const multiplier=typeMultiplier(move.type,battle.enemy.types);
+  let multiplierClass='normal';
+  if(multiplier>1) multiplierClass='effective';
+  else if(multiplier===0) multiplierClass='weak';
+  
+  const moveEl=document.createElement('div');
+  moveEl.className=`move-item${move.pp<=0?' disabled':''}`;
+  moveEl.innerHTML=`
+   <div class="move-name">${move.name}</div>
+   <div class="move-pp">PP ${move.pp}/${move.maxPp}</div>
+   <span class="type-badge ${TYPE_COLORS[move.type]}">${move.type}</span>
+   <div class="dmg-mult ${multiplierClass}">${multiplier===0?'×0':multiplier===0.5?'×½':multiplier===2?'×2':''}</div>
+  `;
+  
+  if(move.pp>0) moveEl.onclick=()=>useMove(index);
+  actions.appendChild(moveEl);
+ });
+ 
+ const backBtn=document.createElement('button');
+ backBtn.className='btn outline';
+ backBtn.innerHTML='<span class="icon">↩️</span> 返回';
+ backBtn.onclick=()=>{
+  document.getElementById('battle-actions').classList.add('hidden');
+  document.getElementById('battle-menu').classList.remove('hidden');
+ };
+ actions.appendChild(backBtn);
+}
+
+function showSwitchMenu(){
+ const switchMenu=document.getElementById('switch-menu');
+ switchMenu.innerHTML='';
+ 
+ state.team.forEach((pokemon,index)=>{
+  const sprite=SPRITES[pokemon.id]||SPRITES['001'];
+  const hpPercent=Math.round(pokemon.hp/pokemon.maxHp*100);
+  
+  const item=document.createElement('div');
+  item.className='panel-item';
+  item.innerHTML=`
+   <div style="width:48px;height:48px;border-radius:50%;background:${sprite.color};display:flex;align-items:center;justify-content:center;font-size:24px">
+    ${sprite.icon}
+   </div>
+   <div style="flex:1">
+    <div style="font-weight:700">${pokemon.name}</div>
+    <div>${pokemon.types.map(t=>`<span class="type-badge ${TYPE_COLORS[t]}">${t}</span>`).join(' ')}</div>
+    <div class="hp-mini"><div class="hp-mini-fill${hpPercent<25?' low':''}" style="width:${hpPercent}%"></div></div>
+    <div style="font-size:.7rem;color:var(--text-dim)">Lv.${pokemon.level} | ${pokemon.hp}/${pokemon.maxHp}</div>
+   </div>
+  `;
+  
+  if(pokemon.hp>0&&pokemon!==state.battle.player){
+   item.onclick=()=>{switchPokemon(index);};
+  }else{
+   item.style.opacity='0.5';
+  }
+  
+  switchMenu.appendChild(item);
+ });
+ 
+ const backBtn=document.createElement('button');
+ backBtn.className='btn outline';
+ backBtn.innerHTML='<span class="icon">↩️</span> 返回';
+ backBtn.onclick=()=>{
+  document.getElementById('switch-menu').classList.add('hidden');
+  document.getElementById('battle-menu').classList.remove('hidden');
+ };
+ switchMenu.appendChild(backBtn);
+}
+
+function switchPokemon(index){
+ const battle=state.battle;
+ const newPokemon=state.team[index];
+ 
+ if(newPokemon.hp<=0){
+  setMsg(`${newPokemon.name}无法战斗！`);
+  return;
+ }
+ 
+ if(newPokemon===battle.player){
+  setMsg(`${newPokemon.name}已经在场上了！`);
+  return;
+ }
+ 
+ battle.player=newPokemon;
+ battle.playerHP=newPokemon.hp;
+ battle.maxPlayerHP=newPokemon.maxHp;
+ 
+ setMsg(`去吧！${newPokemon.name}！`);
+ 
+ document.getElementById('switch-menu').classList.add('hidden');
+ document.getElementById('battle-menu').classList.remove('hidden');
+ updateBattleUI();
+ 
+ setTimeout(()=>{enemyTurn();},800);
+}
+
+function calculateDamage(attacker,defender,move){
+ const multiplier=typeMultiplier(move.type,defender.types);
+ const attackStat=move.category==='physical'?attacker.stats.atk:attacker.stats.spa;
+ const defenseStat=move.category==='physical'?defender.stats.def:defender.stats.spd;
+ const critical=Math.random()<0.0625;
+ 
+ const damage=Math.max(1,Math.floor(
+  (((2*attacker.level)/5+2)*move.power*(attackStat/defenseStat))/50+2
+ )*(critical?1.5:1)*multiplier*(random(85,100)/100));
+ 
+ return{damage:Math.floor(damage),multiplier,critical};
+}
+
+function useMove(index){
+ const battle=state.battle;
+ if(!battle) return;
+ 
+ const move=battle.player.moves[index];
+ if(!move||move.pp<=0) return;
+ 
+ move.pp--;
+ const result=calculateDamage(battle.player,battle.enemy,move);
+ battle.enemyHP=Math.max(0,battle.enemyHP-result.damage);
+ 
+ let message=`${battle.player.name}使用了「${move.name}」！`;
+ if(result.multiplier>1) message+=' 效果拔群！';
+ if(result.multiplier>0&&result.multiplier<1) message+=' 效果不太好...';
+ if(result.multiplier===0) message+=' 没有效果...';
+ if(result.critical) message+=' 会心一击！';
+ message+=` 造成了${result.damage}点伤害！`;
+ setMsg(message);
+ 
+ if(battle.enemyHP<=0){
+  endBattle(true);
+  return;
+ }
+ 
+ document.getElementById('battle-actions').classList.add('hidden');
+ document.getElementById('battle-menu').classList.remove('hidden');
+ 
+ setTimeout(()=>{
+  enemyTurn();
+  updateBattleUI();
+ },600);
+}
+
+function throwBall(){
+ const battle=state.battle;
+ if(!battle||!state.bag.pokeball||state.bag.pokeball<=0) return;
+ 
+ state.bag.pokeball--;
+ 
+ // 冰系稀有精灵100%捕捉率
+ let catchRate;
+ if(battle.enemy.captureRate===100){
+  catchRate=1.0;
+ }else{
+  catchRate=(1-battle.enemyHP/battle.maxEnemyHP)*0.45*1.5;
+ }
+ 
+ setMsg('扔出了精灵球！...');
+ 
+ setTimeout(()=>{
+  if(Math.random()<catchRate){
+   setMsg(`太棒了！${battle.enemy.name}被抓到了！`);
+   state.caught[battle.enemy.id]=true;
+   state.seen[battle.enemy.id]=true;
+   battle.enemy.hp=battle.maxEnemyHP;
+   addToTeam(battle.enemy);
+   endBattle(false,true);
+  }else{
+   setMsg('...摇动了！...'+`${battle.enemy.name}挣脱了！`);
+   setTimeout(()=>{
+    enemyTurn();
+    updateBattleUI();
+   },500);
+  }
+ },800);
+}
+
+function useItem(){
+ const choices=[];
+ if(state.bag.potion>0) choices.push({
+  text:`伤药(${state.bag.potion})`,
+  action:()=>{state.bag.potion--;usePotion(20);}
+ });
+ if(state.bag['super-potion']>0) choices.push({
+  text:`好伤药(${state.bag['super-potion']})`,
+  action:()=>{state.bag['super-potion']--;usePotion(50);}
+ });
+ if(!choices.length){
+  setMsg('背包没有可用道具！');
+  return;
+ }
+ choices.push({text:'取消',action:()=>{}});
+ showChoices('选择道具：',choices);
+}
+
+function usePotion(amount){
+ const battle=state.battle;
+ battle.playerHP=Math.min(battle.maxPlayerHP,battle.playerHP+amount);
+ setMsg(`使用了伤药！恢复了${amount}HP！`);
+ updateBattleUI();
+}
+
+function tryRun(){
+ const battle=state.battle;
+ if(battle.legendary||battle.gym||battle.trainer){
+  setMsg('无法逃跑！');
+  return;
+ }
+ setMsg('成功逃走了！');
+ endBattle(false,false);
+}
+
+function enemyTurn(){
+ const battle=state.battle;
+ if(!battle||battle.enemyHP<=0) return;
+ 
+ const availableMoves=battle.enemy.moves.filter(m=>m.pp>0);
+ if(!availableMoves.length){
+  setMsg(`${battle.enemy.name}无法出招！`);
+  return;
+ }
+ 
+ const move=availableMoves[random(0,availableMoves.length-1)];
+ move.pp--;
+ const result=calculateDamage(battle.enemy,battle.player,move);
+ battle.playerHP=Math.max(0,battle.playerHP-result.damage);
+ 
+ let message=`${battle.enemy.name}使用了「${move.name}」！`;
+ if(result.multiplier>1) message+=' 效果拔群！';
+ message+=` 造成了${result.damage}点伤害！`;
+ setMsg(message);
+ 
+ if(battle.playerHP<=0){
+  // 检查是否有其他存活精灵可以切换
+  const aliveTeam=state.team.filter(p=>p.hp>0&&p!==battle.player);
+  if(aliveTeam.length>0){
+   setMsg(`${battle.player.name}倒下了！请选择下一只精灵！`);
+   document.getElementById('battle-menu').classList.add('hidden');
+   document.getElementById('switch-menu').classList.remove('hidden');
+   showSwitchMenu();
+   return;
+  }
+  endBattle(false);
+  return;
+ }
+ updateBattleUI();
+}
+
+function endBattle(playerWon,caught=false){
+ const battle=state.battle;
+ let expGain=0,moneyGain=0;
+ 
+ if(playerWon&&!caught){
+  expGain=battle.enemy.level*25+random(20,40);
+  moneyGain=battle.enemy.level*10+random(20,50);
+  
+  if(battle.gym){
+   moneyGain*=3;
+   if(battle.gymTeam&&battle.gymIndex<battle.gymTeam.length-1){
+    battle.gymIndex++;
+    const next=battle.gymTeam[battle.gymIndex];
+    battle.enemy=next;
+    battle.enemyHP=next.maxHp;
+    battle.maxEnemyHP=next.maxHp;
+    setMsg(`道馆训练家派出${next.name}！`);
+    updateBattleUI();
+    render();
+    return;
+   }
+   if(battle.gym){
+    state.badges++;
+    moneyGain+=1000;
+    showDialog('你战胜了矿山道馆！获得「岩石徽章」！');
+   }
+  }else if(battle.trainer){
+   moneyGain=(battle.trainerMoney||100)*2;
+   if(battle.trainerTeam&&battle.trainerIndex<battle.trainerTeam.length-1){
+    battle.trainerIndex++;
+    const next=battle.trainerTeam[battle.trainerIndex];
+    battle.enemy=next;
+    battle.enemyHP=next.maxHp;
+    battle.maxEnemyHP=next.maxHp;
+    setMsg(`${battle.trainerName||'训练家'}派出${next.name}！`);
+    updateBattleUI();
+    render();
+    return;
+   }
+  }else if(battle.legendary){
+   moneyGain+=2000;
+   showDialog('星辉龙化作光芒消散，但你感到与它建立了某种联系！');
+  }
+  
+  giveExpToAll(expGain);
+  state.money+=moneyGain;
+  
+  const player=state.team[0];
+  if(player) player.hp=Math.min(player.maxHp,player.hp+Math.floor(player.maxHp*0.3));
+  
+  document.getElementById('exp-gain').textContent=expGain;
+  document.getElementById('money-gain').textContent=moneyGain;
+  document.getElementById('battle-result').style.display='flex';
+  setMsg('战斗胜利！');
+  
+ }else if(!playerWon&&!caught){
+  setMsg('战斗失败...回到精灵中心');
+  state.team.forEach(p=>p.hp=p.maxHp);
+ }
+ 
+ setTimeout(()=>{
+  state.scene='world';
+  document.getElementById('battle-hud').classList.remove('active');
+  document.getElementById('message-box').classList.remove('active');
+  document.getElementById('quick-bar').classList.remove('battle-hidden');
+  state.battle=null;
+  document.getElementById('dialog').classList.remove('active');
+  spawnWildPokemon();
+  updateInteractHint();
+  render();
+ },1500);
+}
+
+// =========== 快捷按钮栏 ===========
+document.getElementById('btn-collapse').onclick=()=>{
+ const bar=document.getElementById('quick-bar');
+ if(bar.classList.contains('collapsed')){
+  bar.classList.remove('collapsed');
+  document.getElementById('btn-collapse').innerHTML='<span class="icon">◀</span><span>收起</span>';
+ }else{
+  bar.classList.add('collapsed');
+  document.getElementById('btn-collapse').innerHTML='<span class="icon">▶</span>';
+ }
+};
+
+document.getElementById('btn-team').onclick=openTeamMenu;
+document.getElementById('btn-bag').onclick=openBagMenu;
+document.getElementById('btn-pokedex').onclick=openPokedex;
+document.getElementById('btn-map').onclick=()=>{
+ showDialog(`当前地图：${MAPS[state.currentMap].name}<br>金币：${state.money}<br>徽章：${state.badges}<br>精灵数量：${state.team.length+state.storage.length}`);
+};
+document.getElementById('btn-save').onclick=()=>{
+ localStorage.setItem('pokemon_save',JSON.stringify(state));
+ showDialog('游戏已保存！');
+};
+
+document.getElementById('btn-team-close').onclick=()=>{
+ document.getElementById('panel-team').classList.remove('active');
+};
+document.getElementById('btn-bag-close').onclick=()=>{
+ document.getElementById('panel-bag').classList.remove('active');
+};
+document.getElementById('btn-pokedex-close').onclick=()=>{
+ document.getElementById('panel-pokedex').classList.remove('active');
+};
+document.getElementById('btn-pokemon-close').onclick=()=>{
+ document.getElementById('panel-pokemon').classList.remove('active');
+ document.getElementById('panel-team').classList.add('active');
+};
+
+// =========== 游戏循环 ===========
+function gameLoop(){
+ if(state.scene==='world'){
+  updateWildPokemon();
+  render();
+ }
+ requestAnimationFrame(gameLoop);
+}
+
+setInterval(()=>{
+ if(state.scene==='world'&&state.wildPokemon.length) render();
+},800);
+
+// =========== 初始化 ===========
+function init(){
+ resize();
+ spawnWildPokemon();
+ 
+ const saved=localStorage.getItem('pokemon_save');
+ if(saved){
+  try{
+   const loaded=JSON.parse(saved);
+   Object.assign(state,loaded);
+   showDialog('游戏存档已加载！');
+  }catch(e){
+   console.log('存档加载失败');
+  }
+ }
+ 
+ if(state.team.length>0){
+  state.scene='world';
+  render();
+ }else{
+  state.scene='world';
+  render();
+  setTimeout(showStarterSelect,500);
+ }
+ 
+ gameLoop();
+}
+
+init();
+
+if('serviceWorker' in navigator){
+ navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
