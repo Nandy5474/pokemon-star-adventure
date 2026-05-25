@@ -44,10 +44,14 @@ canvas{display:block}
 .hp-mini-fill.low{background:var(--danger)}
 .battle-hud{position:absolute;bottom:0;left:0;right:0;background:rgba(22,33,62,.96);backdrop-filter:blur(10px);padding:12px;border-top:2px solid rgba(255,255,255,.1);display:none}
 .battle-hud.active{display:block}
-.battle-status{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px}
-.battle-status .info{background:rgba(255,255,255,.03);border-radius:8px;padding:8px 10px}
-.battle-status .name{font-weight:700;font-size:.85rem}
-.battle-status .level{font-size:.7rem;color:var(--text-dim)}
+.battle-status{position:absolute;top:10px;left:0;right:0;display:none;grid-template-columns:1fr 1fr;gap:12px;padding:0 12px;z-index:10}
+.battle-status .info{background:rgba(0,0,0,.6);border-radius:8px;padding:8px 10px;backdrop-filter:blur(5px);border:1px solid rgba(255,255,255,.1);min-width:140px}
+.battle-status .name{font-weight:700;font-size:.85rem;display:flex;justify-content:space-between;align-items:center}
+.battle-status .level{font-size:.7rem;color:#f7b731;font-weight:600}
+.battle-status .hp{font-size:.7rem;color:var(--text-dim);margin:2px 0}
+.capture-hint{position:absolute;top:80px;left:50%;transform:translateX(-50%);background:rgba(255,215,0,.9);color:#1a1a2e;padding:6px 16px;border-radius:20px;font-size:.8rem;font-weight:700;z-index:12;display:none;animation:pulse 1s infinite}
+.capture-hint.active{display:block}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
 .hp-bar{height:6px;background:rgba(255,255,255,.1);border-radius:3px;margin:4px 0;overflow:hidden}
 .hp-fill{height:100%;background:var(--success);transition:width .4s ease}
 .hp-fill.low{background:var(--danger)}
@@ -170,7 +174,6 @@ canvas{display:block}
 <div class="panel" id="panel-pokemon"><h2>精灵详情</h2><div id="pokemon-detail"></div><button class="btn outline" id="btn-pokemon-close" style="width:100%;margin-top:10px">关闭</button></div>
 <div class="panel" id="panel-starter"><h2>选择初始精灵</h2><div id="starter-list"></div><button class="btn gold" id="btn-confirm" style="width:100%;margin-top:12px">确认选择</button><button class="btn outline" id="btn-starter-close" style="width:100%;margin-top:6px">关闭</button></div>
 <div class="battle-hud" id="battle-hud">
-<div class="battle-status"><div class="info" id="p-info"></div><div class="info" id="e-info"></div></div>
 <div class="battle-menu" id="battle-menu">
 <button class="btn" id="btn-fight"><span class="icon">⚔️</span>战斗</button>
 <button class="btn" id="btn-switch"><span class="icon">🔄</span>更换</button>
@@ -180,6 +183,8 @@ canvas{display:block}
 <div class="battle-actions hidden" id="battle-actions"></div>
 <div class="switch-menu hidden" id="switch-menu"></div>
 </div>
+<div class="battle-status" id="battle-status"><div class="info" id="p-info"></div><div class="info" id="e-info"></div></div>
+<div class="capture-hint" id="capture-hint">快使用精灵球捕捉吧！</div>
 <div class="message-box" id="message-box"><div class="text" id="msg-text"></div><div class="battle-result" id="battle-result" style="display:none"><span>经验+<span id="exp-gain">0</span></span><span>金币+<span id="money-gain">0</span></span></div></div>
 <div class="dialog" id="dialog"><div class="dtext" id="dialog-text"></div><div class="choices" id="dialog-choices"></div></div>
 <div class="item-get" id="item-get"><div class="item-icon" id="item-icon">💰</div><div class="item-text" id="item-text">获得金币+100</div></div>
@@ -389,11 +394,11 @@ const WILD_SPAWNS={
 
 // =========== 游戏状态 ===========
 const state={
- money:3000,
+ money:5000,
  badges:0,
  team:[],
  storage:[],
- bag:{pokeball:5,'great-ball':1,potion:3,'super-potion':1,'space-capsule':1},
+ bag:{pokeball:10,'great-ball':1,potion:3,'super-potion':1,'space-capsule':1},
  seen:{},
  caught:{},
  scene:'world',
@@ -1451,14 +1456,14 @@ function showPokemonDetail(pokemon,index){
 
 function openBagMenu(){
  const items=[
-  {html:`<div><b>精灵球</b> x${state.bag.pokeball||0}</div><div style="font-size:.7rem;color:var(--text-dim)">捕捉野生精灵</div>`},
-  {html:`<div><b>超级球</b> x${state.bag['great-ball']||0}</div><div style="font-size:.7rem;color:var(--text-dim)">更好的捕捉球</div>`},
-  {html:`<div><b>伤药</b> x${state.bag.potion||0}</div><div style="font-size:.7rem;color:var(--text-dim)">恢复20HP</div>`},
-  {html:`<div><b>好伤药</b> x${state.bag['super-potion']||0}</div><div style="font-size:.7rem;color:var(--text-dim)">恢复50HP</div>`},
-  {html:`<div><b>空间胶囊</b> x${state.bag['space-capsule']||0}</div><div style="font-size:.7rem;color:var(--text-dim)">存储多余精灵</div>`},
-  {html:`<div><b>徽章</b> x${state.badges}</div><div style="font-size:.7rem;color:var(--text-dim)">道馆徽章</div>`}
+  {html:`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.1)"><div><b>💰 金币</b></div><div style="color:#f7b731;font-weight:700">${state.money}G</div></div>`},
+  {html:`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.1)"><div><b>🔴 精灵球</b> <span style="font-size:.7rem;color:var(--text-dim)">捕捉野生精灵</span></div><div style="font-weight:700">x${state.bag.pokeball||0}</div></div>`},
+  {html:`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.1)"><div><b>🔵 超级球</b> <span style="font-size:.7rem;color:var(--text-dim)">更好的捕捉球</span></div><div style="font-weight:700">x${state.bag['great-ball']||0}</div></div>`},
+  {html:`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.1)"><div><b>💊 伤药</b> <span style="font-size:.7rem;color:var(--text-dim)">恢复20HP</span></div><div style="font-weight:700">x${state.bag.potion||0}</div></div>`},
+  {html:`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.1)"><div><b>💊 好伤药</b> <span style="font-size:.7rem;color:var(--text-dim)">恢复50HP</span></div><div style="font-weight:700">x${state.bag['super-potion']||0}</div></div>`},
+  {html:`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0"><div><b>📦 空间胶囊</b> <span style="font-size:.7rem;color:var(--text-dim)">存储多余精灵</span></div><div style="font-weight:700">x${state.bag['space-capsule']||0}</div></div>`}
  ];
- renderMenu(`背包 - <span style="color:#f7b731">${state.money}G</span>`,items);
+ renderMenu(`背包`,items);
 }
 
 function openPokedex(){
@@ -1634,9 +1639,18 @@ function updateBattleUI(){
   </div>
  `;
  
+ document.getElementById('battle-status').style.display='grid';
  document.getElementById('battle-menu').classList.remove('hidden');
  document.getElementById('battle-actions').classList.add('hidden');
  document.getElementById('switch-menu').classList.add('hidden');
+ 
+ // 野生精灵血量低于30%时提示捕捉
+ const hint=document.getElementById('capture-hint');
+ if(battle.wild&&battle.enemyHP/battle.maxEnemyHP<=0.3){
+  hint.classList.add('active');
+ }else{
+  hint.classList.remove('active');
+ }
  
  document.getElementById('btn-fight').onclick=()=>{
   document.getElementById('battle-menu').classList.add('hidden');
@@ -1851,6 +1865,14 @@ function throwBall(){
 
 function useItem(){
  const choices=[];
+ if(state.bag.pokeball>0&&state.battle.wild) choices.push({
+  text:`精灵球(${state.bag.pokeball})`,
+  action:()=>{state.bag.pokeball--;throwBall();}
+ });
+ if(state.bag['great-ball']>0&&state.battle.wild) choices.push({
+  text:`超级球(${state.bag['great-ball']})`,
+  action:()=>{state.bag['great-ball']--;throwBall('great');}
+ });
  if(state.bag.potion>0) choices.push({
   text:`伤药(${state.bag.potion})`,
   action:()=>{state.bag.potion--;usePotion(20);}
@@ -1987,6 +2009,8 @@ function endBattle(playerWon,caught=false){
   state.scene='world';
   document.getElementById('battle-hud').classList.remove('active');
   document.getElementById('message-box').classList.remove('active');
+  document.getElementById('battle-status').style.display='none';
+  document.getElementById('capture-hint').classList.remove('active');
   document.getElementById('quick-bar').classList.remove('battle-hidden');
  document.getElementById('virtual-dpad').classList.remove('battle-hidden');
  document.getElementById('virtual-action').classList.remove('battle-hidden');
