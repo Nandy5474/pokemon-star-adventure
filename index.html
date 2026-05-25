@@ -118,18 +118,14 @@ canvas{display:block}
 .virtual-dpad .dpad-row{display:flex;justify-content:center;gap:4px}
 .virtual-dpad .dpad-btn{width:48px;height:48px;background:rgba(67,97,238,0.75);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;cursor:pointer;user-select:none;touch-action:none;border:2px solid rgba(255,255,255,0.3);transition:all .1s}
 .virtual-dpad .dpad-btn:active{transform:scale(0.9);background:rgba(67,97,238,0.95)}
-/* 虚拟确定/取消按钮 */
-.virtual-action{position:fixed;bottom:100px;left:180px;z-index:20;display:none;flex-direction:column;gap:6px}
-.virtual-action .action-btn{width:75px;height:45px;background:rgba(46,204,113,0.8);border-radius:10px;border:2px solid rgba(255,255,255,0.3);color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:all .1s}
-.virtual-action .action-btn.cancel{background:rgba(231,76,60,0.8)}
-.virtual-action .action-btn:active{transform:scale(0.9)}
+
 /* 移动端显示虚拟按键 */
 @media(max-width:768px){
- .virtual-dpad,.virtual-action{display:flex}
+ .virtual-dpad{display:flex}
  .quick-bar{bottom:160px}
 }
 /* 战斗中隐藏虚拟按键 */
-.virtual-dpad.battle-hidden,.virtual-action.battle-hidden{display:none}
+.virtual-dpad.battle-hidden{display:none}
 @media(max-width:768px){.btn{font-size:.8rem;padding:10px}.quick-bar{right:5px;bottom:5px}.panel{width:96vw}}
 </style>
 </head>
@@ -149,11 +145,7 @@ canvas{display:block}
 <div class="dpad-btn" id="dpad-down">↓</div>
 </div>
 </div>
-<!-- 虚拟确定/取消按钮 -->
-<div class="virtual-action" id="virtual-action">
-<button class="action-btn" id="btn-confirm-v">确定</button>
-<button class="action-btn cancel" id="btn-cancel-v">取消</button>
-</div>
+
 <div id="game">
 <canvas id="canvas"></canvas>
 <div class="overlay" id="overlay">
@@ -165,7 +157,7 @@ canvas{display:block}
 <button class="btn small" id="btn-team"><span class="icon">👥</span><span>队伍</span></button>
 <button class="btn small" id="btn-bag"><span class="icon">🎒</span><span>背包</span></button>
 <button class="btn small" id="btn-pokedex"><span class="icon">📖</span><span>图鉴</span></button>
-<button class="btn small" id="btn-map"><span class="icon">🗺️</span><span>地图</span></button>
+<button class="btn small" id="btn-info"><span class="icon">ℹ️</span><span>信息</span></button>
 <button class="btn small" id="btn-minimap"><span class="icon">🗺️</span><span>缩略</span></button>
 <button class="btn small" id="btn-save"><span class="icon">💾</span><span>保存</span></button>
 </div>
@@ -349,18 +341,37 @@ const SPRITES={
  '999':{color:'#9c27b0',icon:'🐉',image:null}
 };
 
+let SPRITES_LOADED = {};
+
 // 精灵图片加载器
 function loadSpriteImages(){
  const promises=[];
  Object.keys(SPRITES).forEach(id=>{
-  const img=new Image();
-  img.crossOrigin='anonymous';
-  const p=new Promise(resolve=>{
-   img.onload=()=>{ SPRITES[id].image=img; resolve(); };
-   img.onerror=()=>{ console.log(`Sprite ${id}.png not found, fallback to icon`); resolve(); };
+  const sprite=SPRITES[id];
+  if(!sprite) return;
+  const imgPath=`sprites/${id}.png`;
+  
+  if(SPRITES_LOADED[id]===imgPath&&sprite.image){
+   promises.push(Promise.resolve());
+   return;
+  }
+  
+  const promise=new Promise(resolve=>{
+   const img=new Image();
+   img.crossOrigin='anonymous';
+   img.onload=()=>{
+    SPRITES[id].image=img;
+    SPRITES_LOADED[id]=imgPath;
+    resolve();
+   };
+   img.onerror=()=>{
+    console.warn(`无法加载精灵图片: ${imgPath}`);
+    SPRITES[id].image=null;
+    resolve();
+   };
+   img.src=imgPath;
   });
-  img.src=`sprites/${id}.png`;
-  promises.push(p);
+  promises.push(promise);
  });
  return Promise.all(promises);
 }
@@ -427,7 +438,8 @@ const state={
  currentNPC:null,
  sailorTalked:false, // 是否与水手对话过
  battleRound:0, // 战斗回合计数，防止异步回调冲突
- follower:null
+ follower:null,
+ startTime:Date.now()
 };
 
 // =========== 工具函数 ===========
@@ -1137,14 +1149,36 @@ canvas.addEventListener('touchend',e=>{
  touchStart=null;
 });
 
+// 键盘快捷键
 document.addEventListener('keydown',e=>{
+ if(e.key==='Enter'||e.key===' '){
+  e.preventDefault();
+  // 模拟确定按钮
+  if(document.getElementById('btn-confirm')&&document.getElementById('btn-confirm').style.display!=='none'){
+   document.getElementById('btn-confirm').click();
+  }else if(document.getElementById('btn-minimap-close')&&document.getElementById('panel-minimap').classList.contains('active')){
+   document.getElementById('btn-minimap-close').click();
+  }else if(document.getElementById('btn-bag-close')&&document.getElementById('panel-bag').classList.contains('active')){
+   document.getElementById('btn-bag-close').click();
+  }else if(document.getElementById('btn-pokedex-close')&&document.getElementById('panel-pokedex').classList.contains('active')){
+   document.getElementById('btn-pokedex-close').click();
+  }else if(document.getElementById('btn-team-close')&&document.getElementById('panel-team').classList.contains('active')){
+   document.getElementById('btn-team-close').click();
+  }else if(state.scene==='world'){
+   interact();
+  }
+ }else if(e.key==='Escape'){
+  e.preventDefault();
+  // 模拟取消/关闭按钮
+  hideAllDialogs();
+ }
+ 
  if(state.scene==='world'){
   const mapping={
    ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',
    w:'up',a:'left',s:'down',d:'right'
   }[e.key];
   if(mapping) movePlayer(mapping);
-  else if(e.key===' '||e.key==='Enter') interact();
   else if(e.key==='t'||e.key==='T') openTeamMenu();
   else if(e.key==='b'||e.key==='B') openBagMenu();
   else if(e.key==='p'||e.key==='P') openPokedex();
@@ -1157,8 +1191,6 @@ function setupVirtualDpad(){
  const btnDown=document.getElementById('dpad-down');
  const btnLeft=document.getElementById('dpad-left');
  const btnRight=document.getElementById('dpad-right');
- const btnConfirm=document.getElementById('btn-confirm-v');
- const btnCancel=document.getElementById('btn-cancel-v');
 
  const addButtonEvents=(btn,action)=>{
   if(!btn) return;
@@ -1170,11 +1202,6 @@ function setupVirtualDpad(){
  addButtonEvents(btnDown,()=>movePlayer('down'));
  addButtonEvents(btnLeft,()=>movePlayer('left'));
  addButtonEvents(btnRight,()=>movePlayer('right'));
- addButtonEvents(btnConfirm,()=>interact());
- addButtonEvents(btnCancel,()=>{
-  // 关闭所有面板
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
- });
 }
 setupVirtualDpad();
 
@@ -1341,7 +1368,6 @@ function startTrainerBattle(npc){
  state.scene='battle';
  document.getElementById('quick-bar').classList.add('battle-hidden');
  document.getElementById('virtual-dpad').classList.add('battle-hidden');
- document.getElementById('virtual-action').classList.add('battle-hidden');
  document.getElementById('battle-hud').classList.add('active');
  document.getElementById('message-box').classList.add('active');
  setMsg(`${npc.name}派出了${team[0].name}！`);
@@ -1366,7 +1392,6 @@ function startGym(){
  state.scene='battle';
  document.getElementById('quick-bar').classList.add('battle-hidden');
  document.getElementById('virtual-dpad').classList.add('battle-hidden');
- document.getElementById('virtual-action').classList.add('battle-hidden');
  document.getElementById('battle-hud').classList.add('active');
  document.getElementById('message-box').classList.add('active');
  setMsg(`道馆训练家派出了${team[0].name}！`);
@@ -1389,7 +1414,6 @@ function startBattle(wild,options={}){
  state.scene='battle';
  document.getElementById('quick-bar').classList.add('battle-hidden');
  document.getElementById('virtual-dpad').classList.add('battle-hidden');
- document.getElementById('virtual-action').classList.add('battle-hidden');
  document.getElementById('battle-hud').classList.add('active');
  document.getElementById('message-box').classList.add('active');
  setMsg(
@@ -2239,7 +2263,6 @@ function endBattle(playerWon,caught=false){
   document.getElementById('capture-hint').classList.remove('active');
   document.getElementById('quick-bar').classList.remove('battle-hidden');
  document.getElementById('virtual-dpad').classList.remove('battle-hidden');
- document.getElementById('virtual-action').classList.remove('battle-hidden');
   state.battle=null;
   document.getElementById('dialog').classList.remove('active');
   spawnWildPokemon();
@@ -2263,8 +2286,16 @@ document.getElementById('btn-collapse').onclick=()=>{
 document.getElementById('btn-team').onclick=openTeamMenu;
 document.getElementById('btn-bag').onclick=openBagMenu;
 document.getElementById('btn-pokedex').onclick=openPokedex;
-document.getElementById('btn-map').onclick=()=>{
- showDialog(`当前地图：${MAPS[state.currentMap].name}<br>金币：${state.money}<br>徽章：${state.badges}<br>精灵数量：${state.team.length+state.storage.length}`);
+document.getElementById('btn-info').onclick=()=>{
+ showDialog(`<h3>玩家信息</h3>
+<p><strong>位置：</strong>${MAPS[state.currentMap].name}</p>
+<p><strong>金币：</strong>${state.money}</p>
+<p><strong>徽章：</strong>${state.badges}</p>
+<p><strong>队伍精灵：</strong>${state.team.length}只</p>
+<p><strong>存储精灵：</strong>${state.storage.length}只</p>
+<p><strong>背包道具：</strong>${Object.values(state.bag).reduce((s,v)=>s+v,0)}个</p>
+<p><strong>游戏时间：</strong>${Math.floor((Date.now()-state.startTime)/60000)}分钟</p>
+<p><strong>版本：</strong>${GAME_VERSION}</p>`);
 };
 document.getElementById('btn-minimap').onclick=()=>{
  renderMinimap();
