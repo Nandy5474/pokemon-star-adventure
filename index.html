@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>星辉传说 v2.3</title>
+<title>星辉传说 v2.4</title>
 <style>
 :root{--bg:#1a1a2e;--surface:#16213e;--primary:#4361ee;--accent:#f72585;--gold:#f7b731;--text:#e0e0e0;--text-dim:#999;--danger:#e74c3c;--success:#2ecc71;--warning:#f39c12}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -135,7 +135,7 @@ canvas{display:block}
 </head>
 <body>
 <div class="overlay-dim" id="overlay-dim"></div>
-<div id="panel-changelog" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:12px;padding:20px;width:min(450px,95vw);max-height:80vh;border:1px solid rgba(255,255,255,.1);box-shadow:0 20px 60px rgba(0,0,0,.5);display:none;overflow-y:auto;z-index:30"><h2 style="text-align:center">星辉传说</h2><div style="text-align:center;font-size:1.5rem;font-weight:700;margin-bottom:8px">v2.3</div><div id="changelog-content" style="font-size:.85rem;line-height:1.6;max-height:50vh;overflow-y:auto"></div><button class="btn gold" id="btn-changelog-close" style="width:100%;margin-top:12px">开始冒险</button></div>
+<div id="panel-changelog" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:12px;padding:20px;width:min(450px,95vw);max-height:80vh;border:1px solid rgba(255,255,255,.1);box-shadow:0 20px 60px rgba(0,0,0,.5);display:none;overflow-y:auto;z-index:30"><h2 style="text-align:center">星辉传说</h2><div style="text-align:center;font-size:1.5rem;font-weight:700;margin-bottom:8px">v2.4</div><div id="changelog-content" style="font-size:.85rem;line-height:1.6;max-height:50vh;overflow-y:auto"></div><button class="btn gold" id="btn-changelog-close" style="width:100%;margin-top:12px">开始冒险</button></div>
 <!-- 虚拟十字键 -->
 <div class="virtual-dpad" id="virtual-dpad">
 <div class="dpad-row">
@@ -166,12 +166,14 @@ canvas{display:block}
 <button class="btn small" id="btn-bag"><span class="icon">🎒</span><span>背包</span></button>
 <button class="btn small" id="btn-pokedex"><span class="icon">📖</span><span>图鉴</span></button>
 <button class="btn small" id="btn-map"><span class="icon">🗺️</span><span>地图</span></button>
+<button class="btn small" id="btn-minimap"><span class="icon">🗺️</span><span>缩略</span></button>
 <button class="btn small" id="btn-save"><span class="icon">💾</span><span>保存</span></button>
 </div>
 <div class="panel" id="panel-team"><h2>精灵队伍</h2><div id="team-list"></div><button class="btn outline" id="btn-team-close" style="width:100%;margin-top:10px">关闭</button></div>
-<div class="panel" id="panel-bag"><h2>背包</h2><div id="bag-list"></div><button class="btn outline" id="btn-bag-close" style="width:100%;margin-top:10px">关闭</button></div>
+<div class="panel" id="panel-bag"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.1)"><h2 style="margin:0;padding:0;border:none">背包</h2><button class="btn outline small" id="btn-bag-close">✕ 关闭</button></div><div id="bag-list"></div></div>
 <div class="panel" id="panel-pokedex"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.1)"><h2 style="margin:0;padding:0;border:none">精灵图鉴</h2><button class="btn outline small" id="btn-pokedex-close">✕ 关闭</button></div><div id="pokedex-list"></div></div>
 <div class="panel" id="panel-pokemon"><h2>精灵详情</h2><div id="pokemon-detail"></div><button class="btn outline" id="btn-pokemon-close" style="width:100%;margin-top:10px">关闭</button></div>
+<div class="panel" id="panel-minimap"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.1)"><h2 style="margin:0;padding:0;border:none">地图缩略图</h2><button class="btn outline small" id="btn-minimap-close">✕ 关闭</button></div><canvas id="minimap-canvas" width="300" height="300" style="border:1px solid rgba(255,255,255,0.2);border-radius:8px;max-width:100%"></canvas><div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px" id="minimap-legend"></div></div>
 <div class="panel" id="panel-starter"><h2>选择初始精灵</h2><div id="starter-list"></div><button class="btn gold" id="btn-confirm" style="width:100%;margin-top:12px">确认选择</button><button class="btn outline" id="btn-starter-close" style="width:100%;margin-top:6px">关闭</button></div>
 <div class="battle-hud" id="battle-hud">
 <div class="battle-menu" id="battle-menu">
@@ -192,8 +194,17 @@ canvas{display:block}
 </div>
 <script>
 // =========== 常量 ===========
-const GAME_VERSION='2.3';
+const GAME_VERSION='2.4';
 const CHANGELOG=[
+ {v:'2.4',items:[
+  '进化系统：初始精灵8级/16级进化',
+  '20级超技能：爆裂燃烧/加农水炮/疯狂植物',
+  '跟随系统：可设置精灵跟随在身后',
+  '地图缩略图：实时查看当前位置',
+  '树木美术全面优化升级',
+  '战斗奖励大幅提升',
+  '背包面板关闭按钮外置',
+ ]},
  {v:'2.3',items:[
   '队伍和图鉴界面显示精灵立绘图片',
   '优化交互弹窗互斥，一次只显示一个',
@@ -273,18 +284,21 @@ const MOVES={
  'dark-pulse':{name:'恶之波动',type:'dark',category:'special',power:80,acc:100,pp:15},
  'aurora-beam':{name:'极光光束',type:'light',category:'special',power:80,acc:100,pp:15},
  'dark-ice':{name:'暗冰冲击',type:'dark',category:'special',power:80,acc:100,pp:15},
+ 'blast-burn':{name:'爆裂燃烧',type:'fire',category:'special',power:200,acc:90,pp:5},
+ 'hydro-cannon':{name:'加农水炮',type:'water',category:'special',power:200,acc:90,pp:5},
+ 'frenzy-plant':{name:'疯狂植物',type:'grass',category:'special',power:200,acc:90,pp:5},
 };
 
 const POKEDEX={
- '001':{id:'001',name:'焰尾兽',types:['fire'],base:{hp:45,atk:49,def:49,spa:65,spd:65,spe:45},evo:{level:16,to:'002'},moves:[{level:1,move:'scratch'},{level:1,move:'growl'},{level:7,move:'ember'}],desc:'热情的小火兽，尾巴燃烧着永不熄灭的火焰',rarity:'common'},
- '002':{id:'002',name:'炎爪兽',types:['fire'],base:{hp:58,atk:64,def:58,spa:80,spd:80,spe:58},moves:[{level:16,move:'fire-fang'},{level:22,move:'flame-burst'}],desc:'火焰变得更加猛烈，爪子能融化岩石',rarity:'common'},
- '003':{id:'003',name:'烈焰兽',types:['fire'],base:{hp:78,atk:84,def:78,spa:109,spd:85,spe:100},moves:[{level:36,move:'flamethrower'},{level:45,move:'inferno'}],desc:'传说中的火焰巨兽，据说能吐出太阳般的高温',rarity:'rare'},
- '004':{id:'004',name:'波波龟',types:['water'],base:{hp:44,atk:48,def:65,spa:50,spd:64,spe:43},evo:{level:16,to:'005'},moves:[{level:1,move:'tackle'},{level:1,move:'tail-whip'},{level:7,move:'water-gun'}],desc:'温和的水龟，背上的水泡能储存大量水分',rarity:'common'},
- '005':{id:'005',name:'浪涌龟',types:['water'],base:{hp:59,atk:63,def:80,spa:65,spd:80,spe:58},moves:[{level:16,move:'bite'},{level:22,move:'water-pulse'}],desc:'能掀起巨大浪花，在海洋中自由遨游',rarity:'common'},
- '006':{id:'006',name:'海啸龟',types:['water'],base:{hp:79,atk:83,def:100,spa:85,spd:105,spe:78},moves:[{level:36,move:'aqua-tail'},{level:45,move:'hydro-pump'}],desc:'海洋的守护者，愤怒时能引发海啸',rarity:'rare'},
- '007':{id:'007',name:'萌芽兽',types:['grass'],base:{hp:45,atk:49,def:49,spa:65,spd:65,spe:45},evo:{level:16,to:'008'},moves:[{level:1,move:'tackle'},{level:1,move:'growl'},{level:7,move:'vine-whip'}],desc:'活泼的植物兽，头上的嫩芽吸收阳光茁壮成长',rarity:'common'},
- '008':{id:'008',name:'藤蔓兽',types:['grass'],base:{hp:60,atk:62,def:63,spa:80,spd:80,spe:60},moves:[{level:16,move:'razor-leaf'},{level:22,move:'poison-powder'}],desc:'身上缠绕着结实的藤蔓，能挥舞荆棘攻击敌人',rarity:'common'},
- '009':{id:'009',name:'森林兽',types:['grass'],base:{hp:80,atk:82,def:83,spa:100,spd:100,spe:80},moves:[{level:36,move:'solar-beam'},{level:45,move:'leaf-storm'}],desc:'森林的化身，能操控周围所有植物的力量',rarity:'rare'},
+ '001':{id:'001',name:'焰尾兽',types:['fire'],base:{hp:45,atk:49,def:49,spa:65,spd:65,spe:45},evo:{level:8,to:'002'},moves:[{level:1,move:'scratch'},{level:1,move:'growl'},{level:7,move:'ember'}],desc:'热情的小火兽，尾巴燃烧着永不熄灭的火焰',rarity:'common'},
+ '002':{id:'002',name:'炎爪兽',types:['fire'],base:{hp:58,atk:64,def:58,spa:80,spd:80,spe:58},evo:{level:16,to:'003'},moves:[{level:16,move:'fire-fang'},{level:22,move:'flame-burst'}],desc:'火焰变得更加猛烈，爪子能融化岩石',rarity:'common'},
+ '003':{id:'003',name:'烈焰兽',types:['fire'],base:{hp:78,atk:84,def:78,spa:109,spd:85,spe:100},moves:[{level:20,move:'blast-burn'},{level:36,move:'flamethrower'},{level:45,move:'inferno'}],desc:'传说中的火焰巨兽，据说能吐出太阳般的高温',rarity:'rare'},
+ '004':{id:'004',name:'波波龟',types:['water'],base:{hp:44,atk:48,def:65,spa:50,spd:64,spe:43},evo:{level:8,to:'005'},moves:[{level:1,move:'tackle'},{level:1,move:'tail-whip'},{level:7,move:'water-gun'}],desc:'温和的水龟，背上的水泡能储存大量水分',rarity:'common'},
+ '005':{id:'005',name:'浪涌龟',types:['water'],base:{hp:59,atk:63,def:80,spa:65,spd:80,spe:58},evo:{level:16,to:'006'},moves:[{level:16,move:'bite'},{level:22,move:'water-pulse'}],desc:'能掀起巨大浪花，在海洋中自由遨游',rarity:'common'},
+ '006':{id:'006',name:'海啸龟',types:['water'],base:{hp:79,atk:83,def:100,spa:85,spd:105,spe:78},moves:[{level:20,move:'hydro-cannon'},{level:36,move:'aqua-tail'},{level:45,move:'hydro-pump'}],desc:'海洋的守护者，愤怒时能引发海啸',rarity:'rare'},
+ '007':{id:'007',name:'萌芽兽',types:['grass'],base:{hp:45,atk:49,def:49,spa:65,spd:65,spe:45},evo:{level:8,to:'008'},moves:[{level:1,move:'tackle'},{level:1,move:'growl'},{level:7,move:'vine-whip'}],desc:'活泼的植物兽，头上的嫩芽吸收阳光茁壮成长',rarity:'common'},
+ '008':{id:'008',name:'藤蔓兽',types:['grass'],base:{hp:60,atk:62,def:63,spa:80,spd:80,spe:60},evo:{level:16,to:'009'},moves:[{level:16,move:'razor-leaf'},{level:22,move:'poison-powder'}],desc:'身上缠绕着结实的藤蔓，能挥舞荆棘攻击敌人',rarity:'common'},
+ '009':{id:'009',name:'森林兽',types:['grass'],base:{hp:80,atk:82,def:83,spa:100,spd:100,spe:80},moves:[{level:20,move:'frenzy-plant'},{level:36,move:'solar-beam'},{level:45,move:'leaf-storm'}],desc:'森林的化身，能操控周围所有植物的力量',rarity:'rare'},
  '010':{id:'010',name:'电光鼠',types:['electric'],base:{hp:35,atk:55,def:30,spa:50,spd:40,spe:90},moves:[{level:1,move:'quick-attack'},{level:5,move:'thunder-shock'}],desc:'敏捷的小鼠，脸颊储存着电力',rarity:'common'},
  '011':{id:'011',name:'石甲虫',types:['rock'],base:{hp:50,atk:65,def:85,spa:35,spd:35,spe:55},moves:[{level:1,move:'tackle'},{level:5,move:'rock-throw'}],desc:'坚硬的甲壳是天然的盔甲',rarity:'common'},
  '012':{id:'012',name:'叶精灵',types:['grass'],base:{hp:65,atk:60,def:45,spa:75,spd:65,spe:95},moves:[{level:1,move:'vine-whip'},{level:5,move:'razor-leaf'}],desc:'住在森林深处的神秘精灵',rarity:'common'},
@@ -412,7 +426,8 @@ const state={
  battleResult:{exp:0,money:0},
  currentNPC:null,
  sailorTalked:false, // 是否与水手对话过
- battleRound:0 // 战斗回合计数，防止异步回调冲突
+ battleRound:0, // 战斗回合计数，防止异步回调冲突
+ follower:null
 };
 
 // =========== 工具函数 ===========
@@ -798,11 +813,28 @@ function renderWorld(){
    const tx=offsetX+x*TILE_SIZE,ty=offsetY+y*TILE_SIZE;
    
    if(tile&&tile.obstacle){
-    ctx.fillStyle=colors.tree;
-    ctx.fillRect(tx+TILE_SIZE/4,ty+TILE_SIZE/2,TILE_SIZE/2,TILE_SIZE/2);
+    // 阴影
+    ctx.fillStyle='rgba(0,0,0,0.15)';
     ctx.beginPath();
-    ctx.arc(tx+TILE_SIZE/2,ty+TILE_SIZE/3,TILE_SIZE/3,0,Math.PI*2);
-    ctx.fillStyle='#2E6B33';
+    ctx.ellipse(tx+TILE_SIZE/2,ty+TILE_SIZE*0.85,TILE_SIZE/3,TILE_SIZE/8,0,0,Math.PI*2);
+    ctx.fill();
+    // 树干
+    ctx.fillStyle='#5D4037';
+    ctx.fillRect(tx+TILE_SIZE/2-TILE_SIZE/12,ty+TILE_SIZE*0.5,TILE_SIZE/6,TILE_SIZE*0.4);
+    // 树冠底层
+    ctx.beginPath();
+    ctx.arc(tx+TILE_SIZE/2,ty+TILE_SIZE*0.35,TILE_SIZE/2.5,0,Math.PI*2);
+    ctx.fillStyle='#2E7D32';
+    ctx.fill();
+    // 树冠上层高光
+    ctx.beginPath();
+    ctx.arc(tx+TILE_SIZE/2-TILE_SIZE/8,ty+TILE_SIZE*0.28,TILE_SIZE/4.5,0,Math.PI*2);
+    ctx.fillStyle='#43A047';
+    ctx.fill();
+    // 高光点
+    ctx.beginPath();
+    ctx.arc(tx+TILE_SIZE/2-TILE_SIZE/6,ty+TILE_SIZE*0.2,TILE_SIZE/12,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,0.3)';
     ctx.fill();
    }else{
     ctx.fillStyle=colors.bg;
@@ -964,6 +996,45 @@ function renderWorld(){
  ctx.arc(px+dirOffset.x,py+dirOffset.y,TILE_SIZE/10,0,Math.PI*2);
  ctx.fillStyle='#06D6A0';
  ctx.fill();
+ 
+ // 绘制跟随精灵
+ if(state.follower){
+  const fTeam=state.team.find(p=>p.id===state.follower);
+  if(fTeam){
+   const fSprite=SPRITES[fTeam.id]||SPRITES['001'];
+   let fOffsetX=0,fOffsetY=0;
+   switch(state.player.dir){
+    case 'up':fOffsetY=TILE_SIZE;break;
+    case 'down':fOffsetY=-TILE_SIZE;break;
+    case 'left':fOffsetX=TILE_SIZE;break;
+    case 'right':fOffsetX=-TILE_SIZE;break;
+   }
+   const fx=px+fOffsetX,fy=py+fOffsetY;
+   const fSize=TILE_SIZE/2;
+   ctx.beginPath();
+   ctx.arc(fx,fy+2,fSize*0.4,0,Math.PI*2);
+   ctx.fillStyle='rgba(0,0,0,0.3)';
+   ctx.fill();
+   ctx.beginPath();
+   ctx.arc(fx,fy,fSize*0.4,0,Math.PI*2);
+   ctx.fillStyle=fSprite.color;
+   ctx.fill();
+   if(fSprite.image){
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(fx,fy,fSize*0.35,0,Math.PI*2);
+    ctx.clip();
+    ctx.drawImage(fSprite.image,fx-fSize*0.32,fy-fSize*0.32,fSize*0.64,fSize*0.64);
+    ctx.restore();
+   }else{
+    ctx.fillStyle='#fff';
+    ctx.font=`bold ${fSize*0.4}px sans-serif`;
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText(fSprite.icon,fx,fy);
+   }
+  }
+ }
 }
 
 function renderBattle(){
@@ -1435,9 +1506,11 @@ function openTeamMenu(){
  const items=state.team.map((p,index)=>{
   const sprite=SPRITES[p.id]||SPRITES['001'];
   const hpPercent=Math.round(p.hp/p.maxHp*100);
+  const followerStar=state.follower===p.id?'⭐ ':'';
   const imgTag=sprite.image?`<img src="${sprite.image.src}" style="width:48px;height:48px;border-radius:50%;object-fit:cover">`:`<div style="width:48px;height:48px;border-radius:50%;background:${sprite.color};display:flex;align-items:center;justify-content:center;font-size:24px">${sprite.icon}</div>`;
   return{
    html:`<div style="display:flex;align-items:center;gap:10px">
+     ${state.follower===p.id?'<span style="color:#f7b731;font-size:1.1em">⭐</span>':''}
      ${imgTag}
      <div style="flex:1">
       <div style="font-weight:700">${p.name}</div>
@@ -1494,6 +1567,38 @@ function showPokemonDetail(pokemon,index){
  `;
  
  document.getElementById('pokemon-detail').innerHTML=detail;
+ // 添加操作按钮
+ const detailActions=document.createElement('div');
+ detailActions.style.cssText='display:flex;gap:6px;margin-top:10px;flex-wrap:wrap';
+ 
+ // 设为首位按钮
+ if(index>0){
+  const setFirstBtn=document.createElement('button');
+  setFirstBtn.className='btn gold small';
+  setFirstBtn.textContent='⭐ 设为首位';
+  setFirstBtn.onclick=()=>{
+   const pkm=state.team.splice(index,1)[0];
+   state.team.unshift(pkm);
+   document.getElementById('panel-pokemon').classList.remove('active');
+   document.getElementById('panel-team').classList.add('active');
+   openTeamMenu();
+  };
+  detailActions.appendChild(setFirstBtn);
+ }
+ 
+ // 设为跟随按钮
+ const followBtn=document.createElement('button');
+ followBtn.className=`btn small ${state.follower===pokemon.id?'success':'outline'}`;
+ followBtn.textContent=state.follower===pokemon.id?'👣 已跟随':'👣 设为跟随';
+ followBtn.onclick=()=>{
+  state.follower=state.follower===pokemon.id?null:pokemon.id;
+  document.getElementById('panel-pokemon').classList.remove('active');
+  document.getElementById('panel-team').classList.add('active');
+  openTeamMenu();
+ };
+ detailActions.appendChild(followBtn);
+ 
+ document.getElementById('pokemon-detail').appendChild(detailActions);
  document.getElementById('panel-team').classList.remove('active');
  document.getElementById('panel-pokemon').classList.add('active');
 }
@@ -1561,6 +1666,83 @@ function openPokedex(){
  });
  
  document.getElementById('panel-pokedex').classList.add('active');
+}
+
+// =========== 地图缩略图 ===========
+function renderMinimap(){
+ const map=MAPS[state.currentMap];
+ if(!map) return;
+ const canvas2=document.getElementById('minimap-canvas');
+ const ctx2=canvas2.getContext('2d');
+ const size=Math.min(300,280);
+ const cellSize=Math.floor(size/Math.max(map.w,map.h));
+ const ox=(size-cellSize*map.w)/2;
+ const oy=(size-cellSize*map.h)/2;
+ const colors=getMapColors(state.currentMap);
+ 
+ ctx2.fillStyle='#1a1a2e';
+ ctx2.fillRect(0,0,canvas2.width,canvas2.height);
+ 
+ for(let y=0;y<map.h;y++){
+  for(let x=0;x<map.w;x++){
+   const idx=y*map.w+x;
+   const tile=map.tiles[idx];
+   const cx=ox+x*cellSize+cellSize/2,cy=oy+y*cellSize+cellSize/2;
+   if(tile&&tile.obstacle){
+    ctx2.fillStyle='#2E7D32';
+    ctx2.beginPath();
+    ctx2.arc(cx,cy,cellSize/2.2,0,Math.PI*2);
+    ctx2.fill();
+   }else{
+    ctx2.fillStyle=colors.bg;
+    ctx2.fillRect(ox+x*cellSize,oy+y*cellSize,cellSize,cellSize);
+   }
+  }
+ }
+ 
+ // 出口
+ if(map.exits) map.exits.forEach(e=>{
+  ctx2.fillStyle='#d4a574';
+  ctx2.fillRect(ox+e.x*cellSize,oy+e.y*cellSize,cellSize,cellSize);
+ });
+ 
+ // NPC
+ if(map.npcs) map.npcs.forEach(n=>{
+  ctx2.fillStyle='#F72585';
+  ctx2.beginPath();
+  ctx2.arc(ox+n.x*cellSize+cellSize/2,oy+n.y*cellSize+cellSize/2,cellSize/2.5,0,Math.PI*2);
+  ctx2.fill();
+ });
+ 
+ // 物品
+ if(map.items) map.items.forEach(it=>{
+  const key=`${state.currentMap}_${it.x}_${it.y}`;
+  if(state.collectedItems[key]) return;
+  ctx2.fillStyle='#f7b731';
+  ctx2.beginPath();
+  ctx2.arc(ox+it.x*cellSize+cellSize/2,oy+it.y*cellSize+cellSize/2,cellSize/3,0,Math.PI*2);
+  ctx2.fill();
+ });
+ 
+ // 玩家位置
+ ctx2.fillStyle='#EF476F';
+ ctx2.beginPath();
+ ctx2.arc(ox+state.player.x*cellSize+cellSize/2,oy+state.player.y*cellSize+cellSize/2,cellSize/2.2,0,Math.PI*2);
+ ctx2.fill();
+ ctx2.strokeStyle='#fff';
+ ctx2.lineWidth=2;
+ ctx2.stroke();
+ 
+ // 图例
+ const legend=document.getElementById('minimap-legend');
+ legend.innerHTML=`
+  <span style="display:inline-flex;align-items:center;gap:3px;font-size:.75rem;margin-right:8px"><span style="width:10px;height:10px;border-radius:50%;background:#EF476F;display:inline-block;border:1px solid #fff"></span>玩家</span>
+  <span style="display:inline-flex;align-items:center;gap:3px;font-size:.75rem;margin-right:8px"><span style="width:10px;height:10px;border-radius:50%;background:#2E7D32;display:inline-block"></span>树木</span>
+  <span style="display:inline-flex;align-items:center;gap:3px;font-size:.75rem;margin-right:8px"><span style="width:10px;height:10px;border-radius:50%;background:#F72585;display:inline-block"></span>NPC</span>
+  <span style="display:inline-flex;align-items:center;gap:3px;font-size:.75rem"><span style="width:10px;height:10px;border-radius:50%;background:#f7b731;display:inline-block"></span>物品</span>
+ `;
+ 
+ document.getElementById('panel-minimap').classList.add('active');
 }
 
 function renderMenu(title,items){
@@ -1992,8 +2174,8 @@ function endBattle(playerWon,caught=false){
  let expGain=0,moneyGain=0;
  
  if(playerWon&&!caught){
-  expGain=battle.enemy.level*25+random(20,40);
-  moneyGain=battle.enemy.level*10+random(20,50);
+  expGain=battle.enemy.level*15+random(20,60);
+  moneyGain=battle.enemy.level*20+random(30,80);
   
   if(battle.gym){
    moneyGain*=3;
@@ -2011,11 +2193,11 @@ function endBattle(playerWon,caught=false){
    }
    if(battle.gym){
     state.badges++;
-    moneyGain+=1000;
+    moneyGain+=3000;
     showDialog('你战胜了矿山道馆！获得「岩石徽章」！');
    }
   }else if(battle.trainer){
-   moneyGain=(battle.trainerMoney||100)*2;
+   moneyGain=(battle.trainerMoney||100)*3;
    if(battle.trainerTeam&&battle.trainerIndex<battle.trainerTeam.length-1){
     state.battleRound++; // 防止旧回调干扰
     battle.trainerIndex++;
@@ -2083,6 +2265,12 @@ document.getElementById('btn-bag').onclick=openBagMenu;
 document.getElementById('btn-pokedex').onclick=openPokedex;
 document.getElementById('btn-map').onclick=()=>{
  showDialog(`当前地图：${MAPS[state.currentMap].name}<br>金币：${state.money}<br>徽章：${state.badges}<br>精灵数量：${state.team.length+state.storage.length}`);
+};
+document.getElementById('btn-minimap').onclick=()=>{
+ renderMinimap();
+};
+document.getElementById('btn-minimap-close').onclick=()=>{
+ document.getElementById('panel-minimap').classList.remove('active');
 };
 document.getElementById('btn-save').onclick=()=>{
  localStorage.setItem('pokemon_save',JSON.stringify(state));
