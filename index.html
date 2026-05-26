@@ -480,6 +480,7 @@ const state={
  battleResult:{exp:0,money:0},
  currentNPC:null,
  sailorTalked:false, // 是否与水手对话过
+ caught050:false, // 050霜晶鹿是否已被捕获（捕获后不再刷新）
  battleRound:0, // 战斗回合计数，防止异步回调冲突
  follower:null,
  startTime:Date.now()
@@ -765,9 +766,11 @@ function spawnWildPokemon(){
  if(!spawnInfo) return;
  
  if(spawnInfo.fixed){
-  // 固定刷新：检查是否已经有一只
+  // 固定刷新：检查是否已经有一只，或已被捕获过
   const existing=state.wildPokemon.filter(w=>w.map===state.currentMap);
   if(existing.length>0) return;
+  // 050霜晶鹿：捕获后不再刷新
+  if(state.currentMap==='deep-beach'&&state.caught050) return;
   
   const spot=spawnInfo.positions[0];
   const pokemonId=spawnInfo.pokemon[0];
@@ -776,6 +779,8 @@ function spawnWildPokemon(){
   wild.map=state.currentMap;
   wild.x=spot.x;
   wild.y=spot.y;
+  wild.sprite=SPRITES[pokemonId];
+  wild.species=species;
   state.wildPokemon.push(wild);
   return;
  }
@@ -2300,6 +2305,8 @@ function endBattle(playerWon,caught=false,isRun=false){
  
  if(caught){
   const pokemon=battle.enemy;
+  // 050霜晶鹿：标记为已捕获，不再刷新
+  if(pokemon.id==='050') state.caught050=true;
   showDialog(`您已成功捕获 <strong>${pokemon.name}</strong>！<br>图鉴已经登录信息。`);
  }else if(playerWon){
   expGain=battle.enemy.level*15+random(20,60);
