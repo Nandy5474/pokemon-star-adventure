@@ -176,8 +176,8 @@ canvas{display:block}
 <div class="panel-close-container" data-panel="panel-pokemon"><button class="btn outline" id="btn-pokemon-close">关闭</button></div>
 <div class="panel" id="panel-minimap"><h2 style="margin:0 0 12px 0;padding:0 0 8px 0;border-bottom:1px solid rgba(255,255,255,.1)">地图缩略图</h2><canvas id="minimap-canvas" width="300" height="300" style="border:1px solid rgba(255,255,255,0.2);border-radius:8px;max-width:100%"></canvas><div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px" id="minimap-legend"></div></div>
 <div class="panel-close-container" data-panel="panel-minimap"><button class="btn outline small" id="btn-minimap-close">✕ 关闭</button></div>
-<div class="panel" id="panel-starter"><h2 style="margin:0 0 12px 0;padding:0 0 8px 0;border-bottom:1px solid rgba(255,255,255,.1)">选择初始精灵</h2><div id="starter-list"></div><button class="btn gold" id="btn-confirm" style="width:100%;margin-top:12px">确认选择</button></div>
-<div class="panel-close-container" data-panel="panel-starter"><button class="btn outline small" id="btn-starter-close">✕ 关闭</button></div>
+<div class="panel" id="panel-starter"><h2 style="margin:0 0 12px 0;padding:0 0 8px 0;border-bottom:1px solid rgba(255,255,255,.1)">选择初始精灵</h2><div id="starter-list"></div></div>
+<div class="panel-close-container" data-panel="panel-starter"><button class="btn gold small" id="btn-starter-confirm-outside" style="min-width:120px">✅ 确认选择</button></div>
 <div class="battle-hud" id="battle-hud">
 <div class="battle-menu" id="battle-menu">
 <button class="btn" id="btn-fight"><span class="icon">⚔️</span>战斗</button>
@@ -1588,9 +1588,16 @@ function hidePanel(panelId) {
 
 function hideAllDialogs(){
  // 关闭所有面板
- document.querySelectorAll('.panel.active').forEach(p=>p.classList.remove('active'));
+ document.querySelectorAll('.panel.active').forEach(p=>{
+  // 初始精灵未选择时，禁止关闭选择面板
+  if(p.id==='panel-starter'&&state.team.length===0) return;
+  p.classList.remove('active');
+ });
  // 关闭所有关闭按钮容器
- document.querySelectorAll('.panel-close-container.active').forEach(c=>c.classList.remove('active'));
+ document.querySelectorAll('.panel-close-container.active').forEach(c=>{
+  if(c.dataset.panel==='panel-starter'&&state.team.length===0) return;
+  c.classList.remove('active');
+ });
  // 关闭NPC头像
  document.getElementById('npc-portrait')?.classList.remove('active');
  // 关闭对话框
@@ -1933,29 +1940,6 @@ function showStarterSelect(){
  });
  
  showPanel('panel-starter');
- document.getElementById('btn-confirm').onclick=()=>{
-  const selected=list.querySelector('[data-selected]');
-  if(!selected) return;
-  const id=selected.dataset.selected;
-  const pokemon=createPokemon(id,5);
-  state.team=[pokemon];
-  state.seen[id]=true;
-  state.caught[id]=true;
-  hidePanel('panel-starter');
-  const sprite=SPRITES[id];
-  // 确认选择后显示精灵图片（如有）
-  const resultImgTag=sprite&&sprite.image
-   ? `<img src="${sprite.image.src}" style="width:80px;height:80px;border-radius:50%;object-fit:contain;background:${sprite.color}">`
-   : `<div style="width:80px;height:80px;border-radius:50%;background:${sprite.color};display:inline-flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:10px">${(sprite&&sprite.icon)||'❓'}</div>`;
-  showDialog(`
-   <div style="text-align:center">
-    ${resultImgTag}
-    <div style="font-weight:700;font-size:1.2rem">你选择了${pokemon.name}！</div>
-    <div style="margin-top:8px">你的冒险开始了！</div>
-   </div>
-  `);
-  spawnWildPokemon();
- };
 }
 
 // =========== 战斗系统 ===========
@@ -2463,8 +2447,31 @@ document.getElementById('btn-bag-close').onclick=()=>{
 document.getElementById('btn-pokedex-close').onclick=()=>{
  hidePanel('panel-pokedex');
 };
-document.getElementById('btn-starter-close').onclick=()=>{
+document.getElementById('btn-starter-confirm-outside').onclick=()=>{
+ const list=document.getElementById('starter-list');
+ const selected=list.querySelector('[data-selected]');
+ if(!selected){
+  showDialog('请先选择一只初始精灵！');
+  return;
+ }
+ const id=selected.dataset.selected;
+ const pokemon=createPokemon(id,5);
+ state.team=[pokemon];
+ state.seen[id]=true;
+ state.caught[id]=true;
  hidePanel('panel-starter');
+ const sprite=SPRITES[id];
+ const resultImgTag=sprite&&sprite.image
+  ? `<img src="${sprite.image.src}" style="width:80px;height:80px;border-radius:50%;object-fit:contain;background:${sprite.color}">`
+  : `<div style="width:80px;height:80px;border-radius:50%;background:${sprite.color};display:inline-flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:10px">${(sprite&&sprite.icon)||'❓'}</div>`;
+ showDialog(`
+  <div style="text-align:center">
+   ${resultImgTag}
+   <div style="font-weight:700;font-size:1.2rem">你选择了${pokemon.name}！</div>
+   <div style="margin-top:8px">你的冒险开始了！</div>
+  </div>
+ `);
+ spawnWildPokemon();
 };
 document.getElementById('btn-pokemon-close').onclick=()=>{
  hidePanel('panel-pokemon');
