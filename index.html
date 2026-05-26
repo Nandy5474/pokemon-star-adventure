@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>星辉传说 v2.4</title>
+<title>星辉传说 v2.5</title>
 <style>
 :root{--bg:#1a1a2e;--surface:#16213e;--primary:#4361ee;--accent:#f72585;--gold:#f7b731;--text:#e0e0e0;--text-dim:#999;--danger:#e74c3c;--success:#2ecc71;--warning:#f39c12}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -36,15 +36,7 @@ canvas{display:block}
 .panel.active{display:block}
 .panel h2{font-size:1.2rem;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.1)}
 .panel h3{font-size:1rem;margin:8px 0 4px;color:var(--accent)}
-.panel-close-container {
-  position: absolute;
-  top: calc(50% + 35vh); /* 在 panel 下方 */
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 20;
-  display: none;
-  margin-top: 12px;
-}
+.panel-close-container{position:fixed;top:50%;left:50%;transform:translate(-50%,35vh);z-index:21;display:none}
 .panel-close-container.active {
   display: block;
 }
@@ -143,7 +135,8 @@ canvas{display:block}
 </head>
 <body>
 <div class="overlay-dim" id="overlay-dim"></div>
-<div id="panel-changelog" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:12px;padding:20px;width:min(450px,95vw);max-height:80vh;border:1px solid rgba(255,255,255,.1);box-shadow:0 20px 60px rgba(0,0,0,.5);display:none;overflow-y:auto;z-index:30"><h2 style="text-align:center">星辉传说</h2><div style="text-align:center;font-size:1.5rem;font-weight:700;margin-bottom:8px">v2.4</div><div id="changelog-content" style="font-size:.85rem;line-height:1.6;max-height:50vh;overflow-y:auto"></div><button class="btn gold" id="btn-changelog-close" style="width:100%;margin-top:12px">开始冒险</button></div>
+<audio id="bgm" loop style="display:none"><source src="bgm/bgm.mp3" type="audio/mpeg"></audio>
+<div id="panel-changelog" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:12px;padding:20px;width:min(450px,95vw);max-height:80vh;border:1px solid rgba(255,255,255,.1);box-shadow:0 20px 60px rgba(0,0,0,.5);display:none;overflow-y:auto;z-index:30"><h2 style="text-align:center">星辉传说</h2><div style="text-align:center;font-size:1.5rem;font-weight:700;margin-bottom:8px">v2.5</div><div id="changelog-content" style="font-size:.85rem;line-height:1.6;max-height:50vh;overflow-y:auto"></div><button class="btn gold" id="btn-changelog-close" style="width:100%;margin-top:12px">开始冒险</button></div>
 <!-- 虚拟十字键 -->
 <div class="virtual-dpad" id="virtual-dpad">
 <div class="dpad-row">
@@ -204,8 +197,11 @@ canvas{display:block}
 </div>
 <script>
 // =========== 常量 ===========
-const GAME_VERSION='2.4.2';
+const GAME_VERSION='2.5';
 const CHANGELOG=[
+ {v:'2.5',items:[
+  '弹窗互斥、BGM系统、050霜晶鹿专属、战败精灵不出战、进化/技能/捕捉弹窗、图鉴同步、关闭按钮外置、战败vs逃跑分离',
+ ]},
  {v:'2.4.2',items:[
   '界面优化：关闭按钮脱离弹窗放在下方独立显示',
   '战斗优化：只有被精灵击败才返回护士处，逃跑只是退出战斗',
@@ -337,7 +333,7 @@ const POKEDEX={
  '023':{id:'023',name:'雷霆鹰',types:['electric'],base:{hp:50,atk:45,def:40,spa:90,spd:50,spe:100},moves:[{level:1,move:'thunder-shock'},{level:5,move:'peck'}],desc:'翱翔于雷云之上的闪电之鹰',rarity:'common'},
  '024':{id:'024',name:'矿洞蝠',types:['dark'],base:{hp:40,atk:45,def:35,spa:30,spd:40,spe:55},moves:[{level:1,move:'pursuit'},{level:5,move:'brick-break'}],desc:'栖息在矿洞中的蝙蝠群',rarity:'common'},
  '025':{id:'025',name:'辉光蝶',types:['light'],base:{hp:55,atk:55,def:50,spa:85,spd:55,spe:90},moves:[{level:1,move:'flash'},{level:5,move:'razor-leaf'}],desc:'翅膀闪耀着美丽光芒的蝴蝶',rarity:'common'},
- '050':{id:'050',name:'霜晶鹿',types:['ice'],base:{hp:95,atk:60,def:80,spa:110,spd:80,spe:65},moves:[{level:1,move:'powder-snow'},{level:1,move:'mist'},{level:15,move:'ice-beam'},{level:30,move:'aurora-beam'},{level:30,move:'dark-ice'},{level:30,move:'blizzard'}],desc:'传说中唯一的冰系精灵，全身覆盖着永恒不化的冰晶',rarity:'legendary',captureRate:100},
+ '050':{id:'050',name:'霜晶鹿',types:['ice'],base:{hp:95,atk:60,def:80,spa:110,spd:80,spe:65},moves:[{level:1,move:'powder-snow'},{level:8,move:'mist'},{level:15,move:'ice-beam'},{level:20,move:'aurora-beam'},{level:20,move:'dark-ice'},{level:25,move:'blizzard'}],desc:'全身覆盖冰晶的稀有精灵，只在海滩深处出现，掌握光与暗的力量',rarity:'rare',captureRate:100},
  '999':{id:'999',name:'星辉龙',types:['light','dark'],base:{hp:120,atk:100,def:100,spa:120,spd:100,spe:110},moves:[{level:1,move:'dragon-breath'},{level:1,move:'cosmic-power'},{level:30,move:'light-of-ruin'},{level:50,move:'dark-pulse'}],desc:'掌控光与暗的传说之龙，据说是星空中诞生的生命',rarity:'legendary'}
 };
 
@@ -462,7 +458,7 @@ Object.values(MAPS).forEach(m=>{
 // 野生精灵生成
 const WILD_SPAWNS={
  'route1':{pokemon:['010','011','012','013','014'],positions:[{x:4,y:4},{x:8,y:5},{x:12,y:6},{x:16,y:4},{x:20,y:7},{x:6,y:9},{x:10,y:7},{x:14,y:5},{x:18,y:4},{x:22,y:5}]},
- 'route2':{pokemon:['015','016','017','018','019','020','050'],positions:[{x:3,y:3},{x:7,y:4},{x:11,y:3},{x:15,y:5},{x:19,y:3},{x:5,y:7},{x:9,y:6},{x:13,y:5},{x:17,y:4},{x:21,y:3},{x:6,y:9},{x:12,y:8}]},
+ 'route2':{pokemon:['015','016','017','018','019','020'],positions:[{x:3,y:3},{x:7,y:4},{x:11,y:3},{x:15,y:5},{x:19,y:3},{x:5,y:7},{x:9,y:6},{x:13,y:5},{x:17,y:4},{x:21,y:3},{x:6,y:9},{x:12,y:8}]},
  'deep-beach':{pokemon:['050'],positions:[{x:8,y:6}],fixed:true}
 };
 
@@ -606,7 +602,9 @@ function showItemGet(icon,text){
 
 // =========== 精灵经验系统 ===========
 function giveExpToAll(expAmount){
+ const evoResults=[];
  state.team.forEach(pokemon=>{
+  if(pokemon.hp<=0) return;
   pokemon.exp+=expAmount;
   while(pokemon.exp>=pokemon.expToNext){
    pokemon.level++;
@@ -624,33 +622,45 @@ function giveExpToAll(expAmount){
     move.pp=move.maxPp;
    });
    
+   // 学习新技能
    if(species.moves){
-    species.moves.forEach(m=>{
-     if(m.level===pokemon.level&&!pokemon.moves.find(pm=>pm.id===m.move)&&pokemon.moves.length<4){
+    species.moves.filter(m=>m.level===pokemon.level).forEach(m=>{
+     const moveData=MOVES[m.move];
+     const existing=pokemon.moves.find(pm=>pm.id===m.move);
+     if(!existing){
+      if(pokemon.moves.length>=4){
+       pokemon.moves.shift();
+      }
       pokemon.moves.push({
-       ...MOVES[m.move],
+       ...moveData,
        id:m.move,
-       pp:MOVES[m.move].pp,
-       maxPp:MOVES[m.move].pp
+       pp:moveData.pp,
+       maxPp:moveData.pp
       });
+      evoResults.push({pokemon:pokemon.name,type:'skill',name:moveData.name});
      }
     });
    }
    
-   if(species.evo&&pokemon.level>=species.evo.level){
+   // 进化检查
+   if(species&&species.evo&&pokemon.level>=species.evo.level){
     const newSpecies=POKEDEX[species.evo.to];
     if(newSpecies){
+     const oldName=pokemon.name;
      pokemon.id=newSpecies.id;
      pokemon.name=newSpecies.name;
      pokemon.types=[...newSpecies.types];
+     state.seen[newSpecies.id]=true;
+     state.caught[newSpecies.id]=true;
      const evolvedStats=calculateStats(newSpecies,pokemon.level,pokemon.ivs,pokemon.evs);
      const evolvedHpDiff=evolvedStats.hp-pokemon.stats.hp;
      pokemon.stats=evolvedStats;
      pokemon.maxHp=evolvedStats.hp;
      pokemon.hp+=evolvedHpDiff;
      
-     newSpecies.moves.forEach(m=>{
-      if(m.level<=pokemon.level&&!pokemon.moves.find(pm=>pm.id===m.move)&&pokemon.moves.length<4){
+     newSpecies.moves.filter(m=>m.level<=pokemon.level).forEach(m=>{
+      if(!pokemon.moves.find(pm=>pm.id===m.move)){
+       if(pokemon.moves.length>=4) pokemon.moves.shift();
        pokemon.moves.push({
         ...MOVES[m.move],
         id:m.move,
@@ -659,6 +669,8 @@ function giveExpToAll(expAmount){
        });
       }
      });
+     
+     evoResults.push({pokemon:oldName,type:'evo',to:newSpecies.name});
     }
    }
   }
@@ -667,6 +679,8 @@ function giveExpToAll(expAmount){
  state.storage.forEach(pokemon=>{
   pokemon.exp+=Math.floor(expAmount*0.5);
  });
+ 
+ return evoResults;
 }
 
 // =========== 精灵存储系统 ===========
@@ -750,13 +764,24 @@ function spawnWildPokemon(){
  const spawnInfo=WILD_SPAWNS[state.currentMap];
  if(!spawnInfo) return;
  
- // 固定刷新：如果已有该地图的精灵则跳过
- if(spawnInfo.fixed && state.wildPokemon.some(p => p.id === spawnInfo.pokemon[0])){
+ if(spawnInfo.fixed){
+  // 固定刷新：检查是否已经有一只
+  const existing=state.wildPokemon.filter(w=>w.map===state.currentMap);
+  if(existing.length>0) return;
+  
+  const spot=spawnInfo.positions[0];
+  const pokemonId=spawnInfo.pokemon[0];
+  const species=POKEDEX[pokemonId];
+  const wild=createPokemon(pokemonId,20);
+  wild.map=state.currentMap;
+  wild.x=spot.x;
+  wild.y=spot.y;
+  state.wildPokemon.push(wild);
   return;
  }
  
  state.wildPokemon=[];
- const spawnCount=spawnInfo.fixed?1:random(3,5);
+ const spawnCount=random(3,5);
  const availableSpots=[...spawnInfo.positions].sort(()=>Math.random()-0.5);
  
  for(let i=0;i<Math.min(spawnCount,availableSpots.length);i++){
@@ -1562,19 +1587,16 @@ function hidePanel(panelId) {
 }
 
 function hideAllDialogs(){
- // 关闭所有弹窗和面板
- document.getElementById('dialog').classList.remove('active');
- document.getElementById('npc-portrait').classList.remove('active');
- 
  // 关闭所有面板
- document.querySelectorAll('.panel.active').forEach(panel=>{
-  panel.classList.remove('active');
- });
- 
+ document.querySelectorAll('.panel.active').forEach(p=>p.classList.remove('active'));
  // 关闭所有关闭按钮容器
- document.querySelectorAll('.panel-close-container.active').forEach(container=>{
-  container.classList.remove('active');
- });
+ document.querySelectorAll('.panel-close-container.active').forEach(c=>c.classList.remove('active'));
+ // 关闭NPC头像
+ document.getElementById('npc-portrait')?.classList.remove('active');
+ // 关闭对话框
+ document.getElementById('dialog')?.classList.remove('active');
+ // 清除对话框回调
+ window._dialogCallback=null;
 }
 
 function setMsg(text){
@@ -2027,7 +2049,15 @@ function showSwitchMenu(){
  const switchMenu=document.getElementById('switch-menu');
  switchMenu.innerHTML='';
  
- state.team.forEach((pokemon,index)=>{
+ const aliveTeam=state.team.filter(p=>p.hp>0&&p!==state.battle.player);
+ if(aliveTeam.length===0){
+  setMsg('没有可以出战的精灵了！');
+  endBattle(false);
+  return;
+ }
+ 
+ aliveTeam.forEach((pokemon)=>{
+  const originalIndex=state.team.indexOf(pokemon);
   const sprite=SPRITES[pokemon.id]||SPRITES['001'];
   const hpPercent=Math.round(pokemon.hp/pokemon.maxHp*100);
   
@@ -2045,12 +2075,7 @@ function showSwitchMenu(){
    </div>
   `;
   
-  if(pokemon.hp>0&&pokemon!==state.battle.player){
-   item.onclick=()=>{switchPokemon(index);};
-  }else{
-   item.style.opacity='0.5';
-  }
-  
+  item.onclick=()=>{switchPokemon(originalIndex);};
   switchMenu.appendChild(item);
  });
  
@@ -2268,7 +2293,10 @@ function endBattle(playerWon,caught=false,isRun=false){
  if(!battle) return; // 防止重复调用
  let expGain=0,moneyGain=0;
  
- if(playerWon&&!caught){
+ if(caught){
+  const pokemon=battle.enemy;
+  showDialog(`您已成功捕获 <strong>${pokemon.name}</strong>！<br>图鉴已经登录信息。`);
+ }else if(playerWon){
   expGain=battle.enemy.level*15+random(20,60);
   moneyGain=battle.enemy.level*20+random(30,80);
   
@@ -2310,39 +2338,44 @@ function endBattle(playerWon,caught=false,isRun=false){
    showDialog('星辉龙化作光芒消散，但你感到与它建立了某种联系！');
   }
   
-  giveExpToAll(expGain);
+  const evoResults=giveExpToAll(expGain);
   state.money+=moneyGain;
   
   const player=state.team[0];
   if(player) player.hp=Math.min(player.maxHp,player.hp+Math.floor(player.maxHp*0.3));
   
-  document.getElementById('exp-gain').textContent=expGain;
-  document.getElementById('money-gain').textContent=moneyGain;
-  document.getElementById('battle-result').style.display='flex';
-  setMsg('战斗胜利！');
+  let resultMsg=`<h3>战斗胜利！</h3>`;
+  resultMsg+=`<p>获得经验: +${expGain}</p>`;
+  resultMsg+=`<p>获得金币: +${moneyGain}</p>`;
   
- }else if(!playerWon&&!caught){
+  if(evoResults.length>0){
+   evoResults.forEach(r=>{
+    if(r.type==='evo'){
+     resultMsg+=`<p style="color:#f7b731">${r.pokemon} 进化成了 ${r.to}！</p>`;
+    }else if(r.type==='skill'){
+     resultMsg+=`<p style="color:#4cc9f0">${r.pokemon} 学会了「${r.name}」！</p>`;
+    }
+   });
+  }
+  
+  showDialog(resultMsg);
+  
+ }else if(!playerWon){
   if(isRun){
    // 逃跑：只是退出战斗，不传送
    setMsg('成功逃走了！');
   }else{
-   // 战败：传送回最近护士处
-   // 查找最近的护士NPC地图
-   const nurseMaps = Object.keys(MAPS).filter(mid => 
-     MAPS[mid].npcs && MAPS[mid].npcs.some(n => n.heal)
-   );
-   
-   // 简单实现：返回到起始镇（起始镇有研究员NPC可治疗）
-   state.currentMap = 'start-town';
-   state.player.x = 12;
-   state.player.y = 14;
-   state.team.forEach(p => { 
-     p.hp = p.maxHp; 
-     p.moves.forEach(m => m.pp = m.maxPp); 
+   // 战败：传送回起始镇
+   state.currentMap='start-town';
+   state.player.x=12;
+   state.player.y=14;
+   state.team.forEach(p=>{ 
+    p.hp=p.maxHp; 
+    p.moves.forEach(m=>m.pp=m.maxPp); 
    });
    
-   showDialog(`你的精灵全部倒下了...<br>被紧急传送到起始镇的精灵中心接受治疗。`, () => {
-     render();
+   showDialog(`你的精灵全部倒下了...<br>被紧急传送到起始镇的精灵中心接受治疗。`,()=>{
+    render();
    });
   }
  }
@@ -2440,6 +2473,19 @@ function init(){
  
  resize();
  spawnWildPokemon();
+ 
+ // BGM 自动播放
+ const bgm=document.getElementById('bgm');
+ if(bgm){
+  bgm.volume=0.3;
+  const playBgm=()=>{
+   bgm.play().catch(()=>{});
+   document.removeEventListener('click',playBgm);
+   document.removeEventListener('keydown',playBgm);
+  };
+  document.addEventListener('click',playBgm,{once:true});
+  document.addEventListener('keydown',playBgm,{once:true});
+ }
  
  loadSpriteImages().then(()=>{
   console.log('🎮 游戏初始化完成！版本 ' + GAME_VERSION);
