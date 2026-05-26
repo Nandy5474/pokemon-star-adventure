@@ -300,6 +300,9 @@ const MOVES={
  'cosmic-power':{name:'宇宙力量',type:'light',category:'status',power:0,acc:100,pp:20,effect:'both-up'},
  'light-of-ruin':{name:'毁灭之光',type:'light',category:'special',power:140,acc:90,pp:5},
  'dark-pulse':{name:'恶之波动',type:'dark',category:'special',power:80,acc:100,pp:15},
+ 'void-strike':{name:'虚空一击',type:'dark',category:'special',power:100,acc:90,pp:5},
+ 'light-beam':{name:'光辉光束',type:'light',category:'special',power:80,acc:100,pp:10},
+ 'holy-flash':{name:'神圣闪光',type:'light',category:'special',power:100,acc:90,pp:5},
  'aurora-beam':{name:'极光光束',type:'light',category:'special',power:80,acc:100,pp:15},
  'dark-ice':{name:'暗冰冲击',type:'dark',category:'special',power:80,acc:100,pp:15},
  'blast-burn':{name:'爆裂燃烧',type:'fire',category:'special',power:200,acc:90,pp:5},
@@ -334,7 +337,7 @@ const POKEDEX={
  '024':{id:'024',name:'矿洞蝠',types:['dark'],base:{hp:40,atk:45,def:35,spa:30,spd:40,spe:55},moves:[{level:1,move:'pursuit'},{level:5,move:'brick-break'}],desc:'栖息在矿洞中的蝙蝠群',rarity:'common'},
  '025':{id:'025',name:'辉光蝶',types:['light'],base:{hp:55,atk:55,def:50,spa:85,spd:55,spe:90},moves:[{level:1,move:'flash'},{level:5,move:'razor-leaf'}],desc:'翅膀闪耀着美丽光芒的蝴蝶',rarity:'common'},
  '050':{id:'050',name:'霜晶鹿',types:['ice'],base:{hp:95,atk:60,def:80,spa:110,spd:80,spe:65},moves:[{level:1,move:'powder-snow'},{level:8,move:'mist'},{level:15,move:'ice-beam'},{level:20,move:'aurora-beam'},{level:20,move:'dark-ice'},{level:25,move:'blizzard'}],desc:'全身覆盖冰晶的稀有精灵，只在海滩深处出现，掌握光与暗的力量',rarity:'rare',captureRate:100},
- '999':{id:'999',name:'星辉龙',types:['light','dark'],base:{hp:120,atk:100,def:100,spa:120,spd:100,spe:110},moves:[{level:1,move:'dragon-breath'},{level:1,move:'cosmic-power'},{level:30,move:'light-of-ruin'},{level:50,move:'dark-pulse'}],desc:'掌控光与暗的传说之龙，据说是星空中诞生的生命',rarity:'legendary'}
+ '999':{id:'999',name:'星辉龙',types:['light','dark'],base:{hp:120,atk:100,def:100,spa:120,spd:100,spe:110},moves:[{level:1,move:'light-beam'},{level:1,move:'dark-pulse'},{level:1,move:'holy-flash'},{level:1,move:'void-strike'},{level:30,move:'light-of-ruin'}],desc:'掌控光与暗的传说之龙，据说是星空中诞生的生命',rarity:'legendary'}
 };
 
 const SPRITES={
@@ -428,16 +431,19 @@ const NPC_ICONS={
  '道馆主':{icon:'🥋',color:'#F72585',name:'道馆主'},
  '??':{icon:'👻',color:'#7209B7',name:'??'},
  '训练家':{icon:'👦',color:'#4ECDC4',name:'森林训练家'},
- '训练家2':{icon:'👧',color:'#FF6B6B',name:'港口训练家'}
+ '训练家2':{icon:'👧',color:'#FF6B6B',name:'港口训练家'},
+ '森林训练家':{icon:'👦',color:'#4ECDC4',name:'森林训练家'},
+ '矿山训练家':{icon:'💪',color:'#8D6E63',name:'矿山训练家'},
+ '海滩训练家':{icon:'🏖️',color:'#FFD8B1',name:'海滩训练家'}
 };
 
 // 地图数据 - 增大面积
 const MAPS={
  'start-town':{w:24,h:16,name:'起始镇',npcs:[{x:13,y:8,name:'研究员',dlg:['欢迎来到起始镇！去研究所找博士吧！','祝你好运，年轻的训练师！']},{x:10,y:5,name:'博士',dlg:['欢迎，新来的训练师！','这是给你的启动资金5000金币，好好利用！'],reward:5000}],items:[{x:7,y:4,type:'money',amount:100},{x:18,y:11,type:'pokeball',amount:1}],exits:[{x:23,y:9,to:'route1',tx:0,ty:9}]},
- 'route1':{w:28,h:14,name:'常盘森林1',wild:'forest',npcs:[{x:12,y:6,name:'训练家',dlg:['我是森林训练家！要和我对战吗？'],battle:true,team:['010','011'],money:150}],items:[{x:5,y:7,type:'money',amount:50},{x:22,y:3,type:'money',amount:80},{x:14,y:10,type:'potion',amount:1}],exits:[{x:0,y:9,to:'start-town',tx:22,ty:9},{x:27,y:7,to:'port-town',tx:0,ty:7}]},
+ 'route1':{w:28,h:14,name:'常盘森林1',wild:'forest',npcs:[{x:12,y:6,name:'森林训练家',dlg:['我是森林训练家！要和我对战吗？'],battle:true,team:['010','011'],money:150}],items:[{x:5,y:7,type:'money',amount:50},{x:22,y:3,type:'money',amount:80},{x:14,y:10,type:'potion',amount:1}],exits:[{x:0,y:9,to:'start-town',tx:22,ty:9},{x:27,y:7,to:'port-town',tx:0,ty:7}]},
  'port-town':{w:26,h:16,name:'港口镇',npcs:[{x:10,y:11,name:'护士',dlg:['欢迎来到精灵中心！要治疗你的精灵吗？'],heal:true},{x:16,y:12,name:'店员',dlg:['欢迎光临！需要买什么吗？'],shop:true},{x:20,y:7,name:'水手',dlg:['我在海滩深处看到过一只发蓝光的精灵...','全身都是冰晶，非常漂亮！'],sailor:true},{x:6,y:4,name:'训练家2',dlg:['我是港口训练家！要挑战我吗？'],battle:true,team:['015','016'],money:200}],items:[{x:3,y:14,type:'money',amount:120}],exits:[{x:0,y:7,to:'route1',tx:26,ty:7},{x:25,y:9,to:'route2',tx:0,ty:9}]},
- 'route2':{w:28,h:14,name:'阳光海滩',wild:'beach',npcs:[{x:16,y:4,name:'训练家',dlg:['我是海滩训练家！要试试我的水系精灵吗？'],battle:true,team:['017','018'],money:180}],items:[{x:7,y:8,type:'money',amount:70},{x:20,y:11,type:'money',amount:90},{x:25,y:5,type:'great-ball',amount:1}],exits:[{x:0,y:9,to:'port-town',tx:24,ty:9},{x:27,y:7,to:'mine-town',tx:0,ty:7},{x:14,y:13,to:'deep-beach',tx:8,ty:11}]},
- 'mine-town':{w:24,h:16,name:'矿山镇',npcs:[{x:10,y:12,name:'护士',dlg:['要治疗精灵吗？'],heal:true},{x:16,y:11,name:'高级店员',dlg:['这里卖更好的道具！'],shop2:true},{x:12,y:7,name:'道馆主',dlg:['我是矿山道馆的馆主！','敢来挑战吗？'],gym:true},{x:5,y:3,name:'训练家',dlg:['我是矿山训练家！我的岩石系精灵很强！'],battle:true,team:['022','011'],money:250}],items:[{x:20,y:5,type:'money',amount:150},{x:7,y:10,type:'super-potion',amount:1}],exits:[{x:0,y:7,to:'route2',tx:26,ty:7},{x:23,y:4,to:'cave',tx:0,ty:7}]},
+ 'route2':{w:28,h:14,name:'阳光海滩',wild:'beach',npcs:[{x:16,y:4,name:'海滩训练家',dlg:['我是海滩训练家！要试试我的水系精灵吗？'],battle:true,team:['017','018'],money:180}],items:[{x:7,y:8,type:'money',amount:70},{x:20,y:11,type:'money',amount:90},{x:25,y:5,type:'great-ball',amount:1}],exits:[{x:0,y:9,to:'port-town',tx:24,ty:9},{x:27,y:7,to:'mine-town',tx:0,ty:7},{x:14,y:13,to:'deep-beach',tx:8,ty:11}]},
+ 'mine-town':{w:24,h:16,name:'矿山镇',npcs:[{x:10,y:12,name:'护士',dlg:['要治疗精灵吗？'],heal:true},{x:16,y:11,name:'高级店员',dlg:['这里卖更好的道具！'],shop2:true},{x:12,y:7,name:'道馆主',dlg:['我是矿山道馆的馆主！','敢来挑战吗？'],gym:true},{x:5,y:3,name:'矿山训练家',dlg:['我是矿山训练家！我的岩石系精灵很强！'],battle:true,team:['022','011'],money:250}],items:[{x:20,y:5,type:'money',amount:150},{x:7,y:10,type:'super-potion',amount:1}],exits:[{x:0,y:7,to:'route2',tx:26,ty:7},{x:23,y:4,to:'cave',tx:0,ty:7}]},
  'cave':{w:23,h:14,name:'传说洞穴',npcs:[{x:11,y:7,name:'??',dlg:['你感觉到了强大的压迫感...','"星辉龙"就在这里！'],legendary:true}],items:[{x:5,y:3,type:'money',amount:300},{x:17,y:10,type:'money',amount:200}],exits:[{x:0,y:7,to:'mine-town',tx:22,ty:4}]},
  'deep-beach':{w:16,h:12,name:'海滩深处',wild:'deep',npcs:[],items:[{x:8,y:6,type:'ice-stone',amount:1}],exits:[{x:0,y:6,to:'route2',tx:14,ty:13}]}
 };
@@ -1437,12 +1443,25 @@ function interactNPC(npc){
 }
 
 function startTrainerBattle(npc){
+ // 根据当前地图动态设置训练家名称
+ const mapName = MAPS[state.currentMap]?.name || '未知区域';
+ const sceneName = mapName.replace(/镇|1|2|区域|深处|洞穴|中心|常盘|阳光|矿山/g, '').trim() || '区域';
+ // 如果npc.name 是通用名（训练家/训练家2），则动态替换
+ let displayName = npc.name;
+ if (displayName === '训练家' || displayName === '训练家2') {
+   // 根据地图名推断场景类型
+   if (state.currentMap === 'route1') displayName = '森林训练家';
+   else if (state.currentMap === 'route2') displayName = '海滩训练家';
+   else if (state.currentMap === 'mine-town') displayName = '矿山训练家';
+   else if (state.currentMap === 'port-town') displayName = '港口训练家';
+   else displayName = sceneName + '训练家';
+ }
  const team=npc.team.map(id=>createPokemon(id,5+state.badges*2));
  const battle={
   player:state.team[0],
   enemy:team[0],
   trainer:true,
-  trainerName:npc.name,
+  trainerName:displayName,
   trainerTeam:team,
   trainerIndex:0,
   trainerMoney:npc.money||100,
@@ -1458,7 +1477,7 @@ function startTrainerBattle(npc){
  document.getElementById('virtual-dpad').classList.add('battle-hidden');
  document.getElementById('battle-hud').classList.add('active');
  document.getElementById('message-box').classList.add('active');
- setMsg(`${npc.name}派出了${team[0].name}！`);
+ setMsg(`${displayName}派出了${team[0].name}！`);
  updateBattleUI();
  render();
 }
@@ -2307,7 +2326,12 @@ function endBattle(playerWon,caught=false,isRun=false){
   const pokemon=battle.enemy;
   // 050霜晶鹿：标记为已捕获，不再刷新
   if(pokemon.id==='050') state.caught050=true;
-  showDialog(`您已成功捕获 <strong>${pokemon.name}</strong>！<br>图鉴已经登录信息。`);
+  // 收服传说精灵（999）后弹出提示
+  if(pokemon.id==='999') {
+    showDialog(`您已成功捕获 <strong>${pokemon.name}</strong>！<br>图鉴已经登录信息。<br><br>💫 你已经掌握世间最强的力量了，去打破韬定律吧`);
+  } else {
+    showDialog(`您已成功捕获 <strong>${pokemon.name}</strong>！<br>图鉴已经登录信息。`);
+  }
  }else if(playerWon){
   expGain=battle.enemy.level*15+random(20,60);
   moneyGain=battle.enemy.level*20+random(30,80);
@@ -2328,8 +2352,8 @@ function endBattle(playerWon,caught=false,isRun=false){
    }
    if(battle.gym){
     state.badges++;
-    moneyGain+=3000;
-    showDialog('你战胜了矿山道馆！获得「岩石徽章」！');
+    moneyGain+=100000;  // 道馆馆主战后奖励十万金币
+    showDialog('你战胜了矿山道馆！获得「岩石徽章」！<br><br>💰 你获得了 <strong>100000</strong> 金币！<br>📣 你已经是最强的训练家了，去试着挑战传说精灵吧！');
    }
   }else if(battle.trainer){
    moneyGain=(battle.trainerMoney||100)*3;
