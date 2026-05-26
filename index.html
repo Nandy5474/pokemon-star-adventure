@@ -7,8 +7,8 @@
 <style>
 :root{--bg:#1a1a2e;--surface:#16213e;--primary:#4361ee;--accent:#f72585;--gold:#f7b731;--text:#e0e0e0;--text-dim:#999;--danger:#e74c3c;--success:#2ecc71;--warning:#f39c12}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;overflow:hidden;height:100vh;touch-action:manipulation;user-select:none;-webkit-user-select:none}
-#game{width:100vw;height:100vh;position:relative;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;overflow:hidden;height:100dvh;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+#game{width:100vw;height:100dvh;position:relative;overflow:hidden}
 canvas{display:block}
 .overlay{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10}
 .overlay>*{pointer-events:auto}
@@ -46,7 +46,7 @@ canvas{display:block}
 .hp-mini{height:4px;background:rgba(255,255,255,.1);border-radius:2px;flex:1;overflow:hidden}
 .hp-mini-fill{height:100%;background:var(--success);transition:width .3s}
 .hp-mini-fill.low{background:var(--danger)}
-.battle-hud{position:absolute;bottom:0;left:0;right:0;background:rgba(22,33,62,.96);backdrop-filter:blur(10px);padding:12px;border-top:2px solid rgba(255,255,255,.1);display:none}
+.battle-hud{position:absolute;bottom:0;left:0;right:0;background:rgba(22,33,62,.96);backdrop-filter:blur(10px);padding:12px;padding-bottom:max(12px,env(safe-area-inset-bottom));border-top:2px solid rgba(255,255,255,.1);display:none}
 .battle-hud.active{display:block}
 .battle-status{position:absolute;top:10px;left:0;right:0;display:none;grid-template-columns:1fr 1fr;gap:12px;padding:0 12px;z-index:10}
 .battle-status .info{background:rgba(0,0,0,.6);border-radius:8px;padding:8px 10px;backdrop-filter:blur(5px);border:1px solid rgba(255,255,255,.1);min-width:140px}
@@ -75,11 +75,11 @@ canvas{display:block}
 .move-item .dmg-mult.weak{background:var(--danger);color:#fff}
 .move-item .dmg-mult.normal{background:var(--text-dim);color:#fff}
 .move-item.disabled{opacity:.5;cursor:not-allowed}
-.message-box{position:absolute;bottom:120px;left:0;right:0;background:rgba(22,33,62,.93);padding:10px 16px;border-top:1px solid rgba(255,255,255,.1);display:none;z-index:15}
+.message-box{position:absolute;bottom:120px;left:0;right:0;background:rgba(22,33,62,.93);padding:10px 16px;padding-bottom:max(10px,env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,.1);display:none;z-index:15}
 .message-box.active{display:block}
 .message-box .battle-result{display:flex;justify-content:space-between;align-items:center;margin-top:4px;font-size:.8rem}
 .message-box .battle-result span{color:var(--gold)}
-.dialog{position:absolute;bottom:0;left:0;right:0;background:rgba(22,33,62,.97);padding:16px;border-top:2px solid rgba(255,255,255,.1);display:none;z-index:20}
+.dialog{position:absolute;bottom:0;left:0;right:0;background:rgba(22,33,62,.97);padding:16px;padding-bottom:max(16px,env(safe-area-inset-bottom));border-top:2px solid rgba(255,255,255,.1);display:none;z-index:20}
 .dialog.active{display:block}
 .dialog .dtext{font-size:.9rem;margin-bottom:12px;line-height:1.5}
 .dialog .choices{display:flex;flex-wrap:wrap;gap:8px}
@@ -118,7 +118,7 @@ canvas{display:block}
 .overlay-dim{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:25;display:none}
 .overlay-dim.active{display:block}
 /* 虚拟十字键 */
-.virtual-dpad{position:fixed;bottom:100px;left:10px;z-index:20;display:none;flex-direction:column;gap:4px}
+.virtual-dpad{position:fixed;bottom:calc(100px + env(safe-area-inset-bottom, 0px));left:10px;z-index:20;display:none;flex-direction:column;gap:4px}
 .virtual-dpad .dpad-row{display:flex;justify-content:center;gap:4px}
 .virtual-dpad .dpad-btn{width:48px;height:48px;background:rgba(67,97,238,0.75);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;cursor:pointer;user-select:none;touch-action:none;border:2px solid rgba(255,255,255,0.3);transition:all .1s}
 .virtual-dpad .dpad-btn:active{transform:scale(0.9);background:rgba(67,97,238,0.95)}
@@ -126,11 +126,11 @@ canvas{display:block}
 /* 移动端显示虚拟按键 */
 @media(max-width:768px){
  .virtual-dpad{display:flex}
- .quick-bar{bottom:160px}
+ .quick-bar{bottom:calc(160px + env(safe-area-inset-bottom, 0px))}
 }
 /* 战斗中隐藏虚拟按键 */
 .virtual-dpad.battle-hidden{display:none}
-@media(max-width:768px){.btn{font-size:.8rem;padding:10px}.quick-bar{right:5px;bottom:5px}.panel{width:96vw}}
+@media(max-width:768px){.btn{font-size:.8rem;padding:10px}.quick-bar{right:5px;bottom:calc(5px + env(safe-area-inset-bottom, 0px))}.panel{width:96vw}}
 </style>
 </head>
 <body>
@@ -1627,7 +1627,10 @@ function openTeamMenu(){
   const sprite=SPRITES[p.id]||SPRITES['001'];
   const hpPercent=Math.round(p.hp/p.maxHp*100);
   const followerStar=state.follower===p.id?'⭐ ':'';
-  const imgTag=sprite.image?`<img src="${sprite.image.src}" style="width:48px;height:48px;border-radius:50%;object-fit:contain">`:`<div style="width:48px;height:48px;border-radius:50%;background:${sprite.color};display:flex;align-items:center;justify-content:center;font-size:24px">${sprite.icon}</div>`;
+  // 安全获取立绘 imgTag，图片未加载时回退到 emoji
+  const imgTag=sprite&&sprite.image
+    ? `<img src="${sprite.image.src}" style="width:48px;height:48px;border-radius:50%;object-fit:contain">`
+    : `<div style="width:48px;height:48px;border-radius:50%;background:${sprite.color};display:flex;align-items:center;justify-content:center;font-size:24px">${(sprite&&sprite.icon)||'❓'}</div>`;
   return{
    html:`<div style="display:flex;align-items:center;gap:10px">
      ${state.follower===p.id?'<span style="color:#f7b731;font-size:1.1em">⭐</span>':''}
@@ -1652,7 +1655,10 @@ function openTeamMenu(){
 
 function showPokemonDetail(pokemon,index){
  const sprite=SPRITES[pokemon.id]||SPRITES['001'];
- const imgTag=sprite.image?`<img src="${sprite.image.src}" style="width:80px;height:80px;border-radius:50%;object-fit:contain">`:`<div style="width:80px;height:80px;border-radius:50%;background:${sprite.color};display:inline-flex;align-items:center;justify-content:center;font-size:40px">${sprite.icon}</div>`;
+ // 安全获取立绘 imgTag，图片未加载时回退到 emoji
+ const imgTag=sprite&&sprite.image
+   ? `<img src="${sprite.image.src}" style="width:80px;height:80px;border-radius:50%;object-fit:contain">`
+   : `<div style="width:80px;height:80px;border-radius:50%;background:${sprite.color};display:inline-flex;align-items:center;justify-content:center;font-size:40px">${(sprite&&sprite.icon)||'❓'}</div>`;
  const detail=`
   <div class="pokemon-detail active">
    <div class="detail-header">
@@ -1749,7 +1755,9 @@ function openPokedex(){
   item.className=`pokedex-item ${seen?'seen':''} ${caught?'caught':''}`;
   
   if(seen){
-   const imgTag=sprite.image?`<img src="${sprite.image.src}" style="width:48px;height:48px;border-radius:50%;object-fit:contain">`:`<div class="pokedex-icon" style="background:${sprite.color}">${sprite.icon}</div>`;
+   const imgTag=sprite&&sprite.image
+     ? `<img src="${sprite.image.src}" style="width:48px;height:48px;border-radius:50%;object-fit:contain">`
+     : `<div class="pokedex-icon" style="background:${sprite.color}">${(sprite&&sprite.icon)||'❓'}</div>`;
    item.innerHTML=`
     ${imgTag}
     <div class="pokedex-name">${species.name}</div>
@@ -1757,7 +1765,9 @@ function openPokedex(){
     <div style="font-size:.6rem;color:var(--text-dim)">${caught?'已捕捉':'已遇见'}</div>
    `;
    item.onclick=()=>{
-    const detailImgTag=sprite.image?`<img src="${sprite.image.src}" style="width:80px;height:80px;border-radius:50%;object-fit:contain">`:`<div style="width:80px;height:80px;border-radius:50%;background:${sprite.color};display:inline-flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:10px">${sprite.icon}</div>`;
+    const detailImgTag=sprite&&sprite.image
+      ? `<img src="${sprite.image.src}" style="width:80px;height:80px;border-radius:50%;object-fit:contain">`
+      : `<div style="width:80px;height:80px;border-radius:50%;background:${sprite.color};display:inline-flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:10px">${(sprite&&sprite.icon)||'❓'}</div>`;
     showDialog(`
      <div style="text-align:center">
       ${detailImgTag}
@@ -1890,7 +1900,10 @@ function showStarterSelect(){
  starters.forEach(id=>{
   const species=POKEDEX[id];
   const sprite=SPRITES[id];
-  const imgTag=sprite.image?`<img src="${sprite.image.src}" style="width:60px;height:60px;border-radius:50%;object-fit:contain">`:`<div style="width:60px;height:60px;border-radius:50%;background:${sprite.color};display:flex;align-items:center;justify-content:center;font-size:28px">${sprite.icon}</div>`;
+  // 优先使用已加载的图片，否则显示 emoji 作为 fallback
+  const imgTag=sprite&&sprite.image
+   ? `<img src="${sprite.image.src}" style="width:60px;height:60px;border-radius:50%;object-fit:contain;background:${sprite.color}">`
+   : `<div style="width:60px;height:60px;border-radius:50%;background:${sprite.color};display:flex;align-items:center;justify-content:center;font-size:28px">${(sprite&&sprite.icon)||'❓'}</div>`;
   const div=document.createElement('div');
   div.className='panel-item';
   div.innerHTML=`
@@ -1930,11 +1943,13 @@ function showStarterSelect(){
   state.caught[id]=true;
   hidePanel('panel-starter');
   const sprite=SPRITES[id];
+  // 确认选择后显示精灵图片（如有）
+  const resultImgTag=sprite&&sprite.image
+   ? `<img src="${sprite.image.src}" style="width:80px;height:80px;border-radius:50%;object-fit:contain;background:${sprite.color}">`
+   : `<div style="width:80px;height:80px;border-radius:50%;background:${sprite.color};display:inline-flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:10px">${(sprite&&sprite.icon)||'❓'}</div>`;
   showDialog(`
    <div style="text-align:center">
-    <div style="width:80px;height:80px;border-radius:50%;background:${sprite.color};display:inline-flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:10px">
-     ${sprite.icon}
-    </div>
+    ${resultImgTag}
     <div style="font-weight:700;font-size:1.2rem">你选择了${pokemon.name}！</div>
     <div style="margin-top:8px">你的冒险开始了！</div>
    </div>
@@ -1951,11 +1966,17 @@ function updateBattleUI(){
  const playerSprite=SPRITES[battle.player.id]||SPRITES['001'];
  const enemySprite=SPRITES[battle.enemy.id]||SPRITES['010'];
  
+ // 安全获取战斗中立绘头像
+ const playerAvatar=playerSprite&&playerSprite.image
+   ? `<img src="${playerSprite.image.src}" style="width:32px;height:32px;border-radius:50%;object-fit:contain;background:${playerSprite.color}">`
+   : `<div style="width:32px;height:32px;border-radius:50%;background:${playerSprite.color};display:flex;align-items:center;justify-content:center;font-size:18px">${(playerSprite&&playerSprite.icon)||'❓'}</div>`;
+ const enemyAvatar=enemySprite&&enemySprite.image
+   ? `<img src="${enemySprite.image.src}" style="width:32px;height:32px;border-radius:50%;object-fit:contain;background:${enemySprite.color}">`
+   : `<div style="width:32px;height:32px;border-radius:50%;background:${enemySprite.color};display:flex;align-items:center;justify-content:center;font-size:18px">${(enemySprite&&enemySprite.icon)||'❓'}</div>`;
+ 
  document.getElementById('p-info').innerHTML=`
   <div style="display:flex;align-items:center;gap:8px">
-   <div style="width:32px;height:32px;border-radius:50%;background:${playerSprite.color};display:flex;align-items:center;justify-content:center;font-size:18px">
-    ${playerSprite.icon}
-   </div>
+   ${playerAvatar}
    <div style="flex:1">
     <div class="name">${battle.player.name}</div>
     <div class="level">Lv.${battle.player.level}</div>
@@ -1976,9 +1997,7 @@ function updateBattleUI(){
      <div class="hp-fill${battle.enemyHP/battle.maxEnemyHP<0.25?' low':''}" style="width:${Math.round(battle.enemyHP/battle.maxEnemyHP*100)}%"></div>
     </div>
    </div>
-   <div style="width:32px;height:32px;border-radius:50%;background:${enemySprite.color};display:flex;align-items:center;justify-content:center;font-size:18px">
-    ${enemySprite.icon}
-   </div>
+   ${enemyAvatar}
   </div>
  `;
  
@@ -2060,13 +2079,15 @@ function showSwitchMenu(){
   const originalIndex=state.team.indexOf(pokemon);
   const sprite=SPRITES[pokemon.id]||SPRITES['001'];
   const hpPercent=Math.round(pokemon.hp/pokemon.maxHp*100);
+  // 安全获取立绘：图片优先，emoji 回退
+  const switchImg=sprite&&sprite.image
+    ? `<img src="${sprite.image.src}" style="width:48px;height:48px;border-radius:50%;object-fit:contain;background:${sprite.color}">`
+    : `<div style="width:48px;height:48px;border-radius:50%;background:${sprite.color};display:flex;align-items:center;justify-content:center;font-size:24px">${(sprite&&sprite.icon)||'❓'}</div>`;
   
   const item=document.createElement('div');
   item.className='panel-item';
   item.innerHTML=`
-   <div style="width:48px;height:48px;border-radius:50%;background:${sprite.color};display:flex;align-items:center;justify-content:center;font-size:24px">
-    ${sprite.icon}
-   </div>
+   ${switchImg}
    <div style="flex:1">
     <div style="font-weight:700">${pokemon.name}</div>
     <div>${pokemon.types.map(t=>`<span class="type-badge ${TYPE_COLORS[t]}">${t}</span>`).join(' ')}</div>
@@ -2450,7 +2471,7 @@ document.getElementById('btn-pokemon-close').onclick=()=>{
  showPanel('panel-team');
 };
 
-// =========== 游戏循环 ===========
+ // =========== 游戏循环 ===========
 function gameLoop(){
  if(state.scene==='world'){
   updateWildPokemon();
@@ -2487,22 +2508,11 @@ function init(){
   document.addEventListener('keydown',playBgm,{once:true});
  }
  
- loadSpriteImages().then(()=>{
-  console.log('🎮 游戏初始化完成！版本 ' + GAME_VERSION);
-  console.log('🌐 在线预览: https://nandy5474.github.io/pokemon-star-adventure/');
-  console.log('📁 本地文件: ' + window.location.href);
-  setTimeout(() => {
-    if (window.location.protocol === 'file:') {
-      console.log('💡 提示: 本地运行中，GitHub同步后可在浏览器中访问 https://nandy5474.github.io/pokemon-star-adventure/ 在线游玩');
-    }
-  }, 2000);
- }).catch(e => console.error('加载失败:', e));
- 
+ // 加载存档
  const saved=localStorage.getItem('pokemon_save');
  if(saved){
   try{
    const loaded=JSON.parse(saved);
-   // 保留原来的 team 中的 reference 类型数据
    Object.assign(state,loaded);
    showDialog('游戏存档已加载！');
   }catch(e){
@@ -2510,16 +2520,32 @@ function init(){
   }
  }
  
- if(state.team.length>0){
-  state.scene='world';
-  render();
- }else{
-  state.scene='world';
-  render();
-  setTimeout(showStarterSelect,500);
- }
+ // 等待图片加载完成后再初始化界面
+ const afterInit = () => {
+  if(state.team.length>0){
+   state.scene='world';
+   render();
+   gameLoop();
+  }else{
+   state.scene='world';
+   render();
+   showStarterSelect();
+   gameLoop();
+  }
+ };
  
- gameLoop();
+ loadSpriteImages().then(()=>{
+  console.log('🎮 游戏初始化完成！版本 ' + GAME_VERSION);
+  console.log('🌐 在线预览: https://nandy5474.github.io/pokemon-star-adventure/');
+  console.log('📁 本地文件: ' + window.location.href);
+  if (window.location.protocol === 'file:') {
+   console.log('💡 提示: 本地运行中，GitHub同步后可在浏览器中访问在线版本');
+  }
+  afterInit();
+ }).catch(e => {
+  console.error('图片加载失败:', e);
+  afterInit();
+ });
 }
 
 init();
